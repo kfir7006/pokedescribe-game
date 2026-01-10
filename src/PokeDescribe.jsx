@@ -1,42 +1,39 @@
+/* eslint-disable */
 import React, { useState, useEffect } from 'react';
-import { Timer, Users, Trophy, Zap, Copy, Check } from 'lucide-react';
+import { Copy, Check } from 'lucide-react';
 
 const POKEMON_POOLS = {
   easy: [
-    { name: 'Pikachu', sprite: '025', gen: 1 },
-    { name: 'Charizard', sprite: '006', gen: 1 },
-    { name: 'Eevee', sprite: '133', gen: 1 },
-    { name: 'Squirtle', sprite: '007', gen: 1 },
-    { name: 'Bulbasaur', sprite: '001', gen: 1 },
-    { name: 'Meowth', sprite: '052', gen: 1 },
-    { name: 'Snorlax', sprite: '143', gen: 1 },
-    { name: 'Jigglypuff', sprite: '039', gen: 1 },
-    { name: 'Psyduck', sprite: '054', gen: 1 },
-    { name: 'Mewtwo', sprite: '150', gen: 1 },
+    { name: 'Pikachu', sprite: '025' },
+    { name: 'Charizard', sprite: '006' },
+    { name: 'Eevee', sprite: '133' },
+    { name: 'Squirtle', sprite: '007' },
+    { name: 'Bulbasaur', sprite: '001' },
+    { name: 'Meowth', sprite: '052' },
+    { name: 'Snorlax', sprite: '143' },
+    { name: 'Jigglypuff', sprite: '039' },
+    { name: 'Psyduck', sprite: '054' },
+    { name: 'Mewtwo', sprite: '150' },
   ],
   medium: [
-    { name: 'Lucario', sprite: '448', gen: 4 },
-    { name: 'Umbreon', sprite: '197', gen: 2 },
-    { name: 'Garchomp', sprite: '445', gen: 4 },
-    { name: 'Typhlosion', sprite: '157', gen: 2 },
-    { name: 'Blaziken', sprite: '257', gen: 3 },
-    { name: 'Ampharos', sprite: '181', gen: 2 },
-    { name: 'Absol', sprite: '359', gen: 3 },
-    { name: 'Scizor', sprite: '212', gen: 2 },
-    { name: 'Flygon', sprite: '330', gen: 3 },
-    { name: 'Heracross', sprite: '214', gen: 2 },
+    { name: 'Lucario', sprite: '448' },
+    { name: 'Umbreon', sprite: '197' },
+    { name: 'Garchomp', sprite: '445' },
+    { name: 'Typhlosion', sprite: '157' },
+    { name: 'Blaziken', sprite: '257' },
+    { name: 'Ampharos', sprite: '181' },
+    { name: 'Absol', sprite: '359' },
+    { name: 'Scizor', sprite: '212' },
   ],
   hard: [
-    { name: 'Sigilyph', sprite: '561', gen: 5 },
-    { name: 'Cryogonal', sprite: '615', gen: 5 },
-    { name: 'Stunfisk', sprite: '618', gen: 5 },
-    { name: 'Relicanth', sprite: '369', gen: 3 },
-    { name: 'Chimecho', sprite: '358', gen: 3 },
-    { name: 'Carnivine', sprite: '455', gen: 4 },
-    { name: 'Lumineon', sprite: '457', gen: 4 },
-    { name: 'Klinklang', sprite: '601', gen: 5 },
-    { name: 'Beheeyem', sprite: '606', gen: 5 },
-    { name: 'Gorebyss', sprite: '368', gen: 3 },
+    { name: 'Sigilyph', sprite: '561' },
+    { name: 'Cryogonal', sprite: '615' },
+    { name: 'Stunfisk', sprite: '618' },
+    { name: 'Relicanth', sprite: '369' },
+    { name: 'Chimecho', sprite: '358' },
+    { name: 'Carnivine', sprite: '455' },
+    { name: 'Lumineon', sprite: '457' },
+    { name: 'Klinklang', sprite: '601' },
   ]
 };
 
@@ -47,11 +44,12 @@ const generateRoomCode = () => {
 };
 
 export default function PokeDescribe() {
-  const [screen, setScreen] = useState('main-menu'); // main-menu, join-game, lobby, game
-  const [gameState, setGameState] = useState('difficulty'); // difficulty, describing, steal, round-end, game-over
+  const [screen, setScreen] = useState('main-menu');
+  const [gameState, setGameState] = useState('difficulty');
   const [roomCode, setRoomCode] = useState('');
   const [joinCodeInput, setJoinCodeInput] = useState('');
   const [playerName, setPlayerName] = useState('');
+  const [myPlayerId, setMyPlayerId] = useState(null);
   const [players, setPlayers] = useState([]);
   const [teams, setTeams] = useState([]);
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0);
@@ -64,43 +62,102 @@ export default function PokeDescribe() {
   const [stealTeamIndex, setStealTeamIndex] = useState(null);
   const [copied, setCopied] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Timer logic
+  const getRoomKey = (code) => `room:${code}`;
+  const getPlayersKey = (code) => `players:${code}`;
+
   useEffect(() => {
-    if (screen === 'game' && (gameState === 'describing' || gameState === 'steal')) {
-      if (timeLeft > 0) {
-        const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-        return () => clearTimeout(timer);
-      } else {
-        if (gameState === 'describing') {
-  setTimeout(() => {
-    setGameState('steal');
-    setTimeLeft(30);
-  }, 0);
-} else {
-  setTimeout(() => {
-    setGameState('round-end');
-  }, 0);
-}
-
-      }
+    if (screen === 'lobby' && roomCode) {
+      const interval = setInterval(() => {
+        loadRoomPlayers();
+      }, 2000);
+      return () => clearInterval(interval);
     }
-  }, [timeLeft, gameState, screen]);
+  }, [screen, roomCode]);
 
-  const createGame = () => {
-    const code = generateRoomCode();
-    const name = playerName.trim() || 'Player';
-    setRoomCode(code);
-    setPlayers([{ id: 1, name: name, team: null, role: null, isYou: true }]);
-    setScreen('lobby');
+  const loadRoomPlayers = async () => {
+    try {
+      const result = await window.storage.get(getPlayersKey(roomCode), true);
+      if (result?.value) {
+        const loadedPlayers = JSON.parse(result.value);
+        setPlayers(loadedPlayers);
+      }
+    } catch (error) {
+      console.log('Room loading...');
+    }
   };
 
-  const joinGame = () => {
-    if (joinCodeInput.trim().length >= 4) {
-      const name = playerName.trim() || 'Player';
-      setRoomCode(joinCodeInput.toUpperCase());
-      setPlayers([{ id: 1, name: name, team: null, role: null, isYou: true }]);
+  const saveRoomPlayers = async (updatedPlayers) => {
+    try {
+      await window.storage.set(getPlayersKey(roomCode), JSON.stringify(updatedPlayers), true);
+      setPlayers(updatedPlayers);
+    } catch (error) {
+      console.error('Failed to save players:', error);
+    }
+  };
+
+  const createGame = async () => {
+    const code = generateRoomCode();
+    const name = playerName.trim() || 'Player';
+    const playerId = Date.now().toString();
+    
+    setRoomCode(code);
+    setMyPlayerId(playerId);
+    setIsLoading(true);
+
+    try {
+      await window.storage.set(getRoomKey(code), JSON.stringify({ created: Date.now() }), true);
+      
+      const initialPlayers = [{ id: playerId, name: name, team: null, role: null }];
+      await window.storage.set(getPlayersKey(code), JSON.stringify(initialPlayers), true);
+      
+      setPlayers(initialPlayers);
       setScreen('lobby');
+    } catch (error) {
+      setErrorMessage('Failed to create game. Please try again.');
+      setTimeout(() => setErrorMessage(''), 3000);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const joinGame = async () => {
+    if (joinCodeInput.trim().length < 4) return;
+    
+    const code = joinCodeInput.toUpperCase();
+    const name = playerName.trim() || 'Player';
+    const playerId = Date.now().toString();
+    
+    setIsLoading(true);
+
+    try {
+      const roomResult = await window.storage.get(getRoomKey(code), true);
+      
+      if (!roomResult) {
+        setErrorMessage('Room code not found! Please check the code and try again.');
+        setTimeout(() => setErrorMessage(''), 3000);
+        setIsLoading(false);
+        return;
+      }
+
+      const playersResult = await window.storage.get(getPlayersKey(code), true);
+      const existingPlayers = playersResult ? JSON.parse(playersResult.value) : [];
+      
+      const newPlayer = { id: playerId, name: name, team: null, role: null };
+      const updatedPlayers = [...existingPlayers, newPlayer];
+      
+      await window.storage.set(getPlayersKey(code), JSON.stringify(updatedPlayers), true);
+      
+      setRoomCode(code);
+      setMyPlayerId(playerId);
+      setPlayers(updatedPlayers);
+      setScreen('lobby');
+    } catch (error) {
+      setErrorMessage('Failed to join game. Please try again.');
+      setTimeout(() => setErrorMessage(''), 3000);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -110,29 +167,18 @@ export default function PokeDescribe() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const addPlayer = () => {
-    setPlayers([...players, { 
-      id: players.length + 1, 
-      name: `Player ${players.length + 1}`, 
-      team: null, 
-      role: null,
-      isYou: false
-    }]);
+  const assignToTeam = async (teamIndex) => {
+    const updatedPlayers = players.map(p => 
+      p.id === myPlayerId ? { ...p, team: teamIndex } : p
+    );
+    await saveRoomPlayers(updatedPlayers);
   };
 
-  const assignToTeam = (teamIndex) => {
-  setPlayers(players.map(p =>
-    p.isYou ? { ...p, team: teamIndex } : p
-  ));
-};
-
-
-  const setMyRole = (role) => {
-    const currentPlayer = players.find(p => p.isYou);
+  const setMyRole = async (role) => {
+    const myPlayer = players.find(p => p.id === myPlayerId);
     
-    // If setting role to 'noob', check if team already has a noob
-    if (role === 'noob' && currentPlayer.team !== null) {
-      const teamPlayers = players.filter(p => p.team === currentPlayer.team && !p.isYou);
+    if (role === 'noob' && myPlayer.team !== null) {
+      const teamPlayers = players.filter(p => p.team === myPlayer.team && p.id !== myPlayerId);
       const hasNoob = teamPlayers.some(p => p.role === 'noob');
       
       if (hasNoob) {
@@ -142,13 +188,13 @@ export default function PokeDescribe() {
       }
     }
     
-    setPlayers(players.map(p => 
-      p.isYou ? { ...p, role } : p
-    ));
+    const updatedPlayers = players.map(p => 
+      p.id === myPlayerId ? { ...p, role } : p
+    );
+    await saveRoomPlayers(updatedPlayers);
   };
 
   const startGame = () => {
-    // Create teams from players
     const teamMap = {};
     players.forEach(p => {
       if (p.team !== null) {
@@ -161,7 +207,6 @@ export default function PokeDescribe() {
     });
 
     const newTeams = Object.entries(teamMap).map(([idx, members]) => ({
-
       id: parseInt(idx),
       name: `Team ${parseInt(idx) + 1}`,
       color: COLORS[parseInt(idx) % COLORS.length],
@@ -173,6 +218,22 @@ export default function PokeDescribe() {
     setTeams(newTeams);
     setScreen('game');
   };
+
+  useEffect(() => {
+    if (screen === 'game' && (gameState === 'describing' || gameState === 'steal')) {
+      if (timeLeft > 0) {
+        const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+        return () => clearTimeout(timer);
+      } else {
+        if (gameState === 'describing') {
+          setGameState('steal');
+          setTimeLeft(30);
+        } else {
+          setGameState('round-end');
+        }
+      }
+    }
+  }, [timeLeft, gameState, screen]);
 
   const selectDifficulty = (diff) => {
     setDifficulty(diff);
@@ -226,20 +287,25 @@ export default function PokeDescribe() {
     setJoinCodeInput('');
     setPlayerName('');
     setErrorMessage('');
+    setMyPlayerId(null);
   };
 
-  // MAIN MENU
   if (screen === 'main-menu') {
     return (
-     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8">
-        <div className="bg-white rounded-3xl shadow-2xl p-12 max-w-2xl w-full mx-auto text-center">
-
+      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8 flex items-center justify-center">
+        <div className="bg-white rounded-3xl shadow-2xl p-12 max-w-2xl w-full">
           <div className="text-center mb-12">
             <h1 className="text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
               PokéDescribe
             </h1>
             <p className="text-2xl text-gray-600">The party game where Pokémon knowledge is optional!</p>
           </div>
+
+          {errorMessage && (
+            <div className="mb-6 bg-red-100 border-2 border-red-400 rounded-xl p-4 text-center">
+              <div className="text-red-700 font-bold text-lg">⚠️ {errorMessage}</div>
+            </div>
+          )}
 
           <div className="mb-8">
             <label className="block text-lg font-bold text-gray-700 mb-3">Your Display Name</label>
@@ -256,9 +322,10 @@ export default function PokeDescribe() {
           <div className="space-y-6">
             <button
               onClick={createGame}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-3xl font-bold py-8 rounded-2xl hover:scale-105 transition-transform shadow-lg"
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-3xl font-bold py-8 rounded-2xl hover:scale-105 transition-transform shadow-lg disabled:opacity-50"
             >
-              Create Game
+              {isLoading ? 'Creating...' : 'Create Game'}
             </button>
 
             <button
@@ -283,7 +350,6 @@ export default function PokeDescribe() {
     );
   }
 
-  // JOIN GAME SCREEN
   if (screen === 'join-game') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8 flex items-center justify-center">
@@ -294,6 +360,12 @@ export default function PokeDescribe() {
             </h1>
             <p className="text-xl text-gray-600">Enter the room code to join</p>
           </div>
+
+          {errorMessage && (
+            <div className="mb-6 bg-red-100 border-2 border-red-400 rounded-xl p-4 text-center">
+              <div className="text-red-700 font-bold text-lg">⚠️ {errorMessage}</div>
+            </div>
+          )}
 
           <div className="space-y-6">
             <div>
@@ -312,10 +384,10 @@ export default function PokeDescribe() {
 
             <button
               onClick={joinGame}
-              disabled={joinCodeInput.trim().length < 4}
+              disabled={joinCodeInput.trim().length < 4 || isLoading}
               className="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white text-2xl font-bold py-6 rounded-xl hover:scale-105 transition-transform shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
-              Join Game
+              {isLoading ? 'Joining...' : 'Join Game'}
             </button>
 
             <button
@@ -330,9 +402,9 @@ export default function PokeDescribe() {
     );
   }
 
-  // LOBBY SCREEN
   if (screen === 'lobby') {
     const numTeams = 4;
+    const myPlayer = players.find(p => p.id === myPlayerId);
     
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8">
@@ -342,17 +414,15 @@ export default function PokeDescribe() {
               <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-2">
                 Game Lobby
               </h1>
-              <p className="text-xl text-gray-600">Assign players to teams and roles</p>
+              <p className="text-xl text-gray-600">Choose your team and role</p>
             </div>
 
-            {/* Error Message */}
             {errorMessage && (
               <div className="mb-6 bg-red-100 border-2 border-red-400 rounded-xl p-4 text-center">
                 <div className="text-red-700 font-bold text-lg">⚠️ {errorMessage}</div>
               </div>
             )}
 
-            {/* Team Grid */}
             <div className="grid grid-cols-4 gap-4 mb-8">
               {Array.from({ length: numTeams }).map((_, teamIdx) => {
                 const teamPlayers = players.filter(p => p.team === teamIdx);
@@ -373,24 +443,22 @@ export default function PokeDescribe() {
                     </div>
 
                     <div className="space-y-3">
-                      {/* Noobs */}
                       <div>
                         <div className="text-xs font-bold text-gray-600 mb-1">NOOBS</div>
                         {noobs.map(p => (
                           <div key={p.id} className="bg-white rounded-lg px-3 py-2 text-sm font-medium mb-1 flex items-center justify-between">
                             <span>{p.name}</span>
-                            {p.isYou && <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded">YOU</span>}
+                            {p.id === myPlayerId && <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded">YOU</span>}
                           </div>
                         ))}
                       </div>
 
-                      {/* Pros */}
                       <div>
                         <div className="text-xs font-bold text-gray-600 mb-1">PROS</div>
                         {pros.map(p => (
                           <div key={p.id} className="bg-white rounded-lg px-3 py-2 text-sm font-medium mb-1 flex items-center justify-between">
                             <span>{p.name}</span>
-                            {p.isYou && <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded">YOU</span>}
+                            {p.id === myPlayerId && <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded">YOU</span>}
                           </div>
                         ))}
                       </div>
@@ -400,117 +468,107 @@ export default function PokeDescribe() {
               })}
             </div>
 
-            {/* Your Selection Panel */}
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-4 border-blue-300 rounded-2xl p-8 mb-6">
-              <div className="text-center mb-6">
-                <h2 className="text-3xl font-bold text-blue-600 mb-2">Your Selection</h2>
-                <p className="text-lg text-gray-700">Choose your team and role</p>
-              </div>
+            {myPlayer && (
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-4 border-blue-300 rounded-2xl p-8 mb-6">
+                <div className="text-center mb-6">
+                  <h2 className="text-3xl font-bold text-blue-600 mb-2">Your Selection</h2>
+                  <p className="text-lg text-gray-700">Choose your team and role</p>
+                </div>
 
-              {(() => {
-                const you = players.find(p => p.isYou);
-                return (
-                  <div className="space-y-6">
-                    {/* Team Selection */}
-                    <div>
-                      <div className="text-lg font-bold text-gray-800 mb-3 text-center">
-                        Select Team {you.team !== null && `(Currently: Team ${you.team + 1})`}
-                      </div>
-                      <div className="grid grid-cols-4 gap-3">
-                        {Array.from({ length: numTeams }).map((_, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => assignToTeam(idx)}
-                            className={`py-4 rounded-xl font-bold text-white hover:scale-105 transition-transform ${
-                              you.team === idx ? 'ring-4 ring-offset-2 ring-blue-500 scale-105' : ''
-                            }`}
-                            style={{ backgroundColor: COLORS[idx] }}
-                          >
-                            Team {idx + 1}
-                          </button>
-                        ))}
-                      </div>
+                <div className="space-y-6">
+                  <div>
+                    <div className="text-lg font-bold text-gray-800 mb-3 text-center">
+                      Select Team {myPlayer.team !== null && `(Currently: Team ${myPlayer.team + 1})`}
                     </div>
-
-                    {/* Role Selection */}
-                    <div>
-                      <div className="text-lg font-bold text-gray-800 mb-3 text-center">
-                        Select Role {you.role && `(Currently: ${you.role === 'noob' ? 'Noob' : 'Pro'})`}
-                      </div>
-                      <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
+                    <div className="grid grid-cols-4 gap-3">
+                      {Array.from({ length: numTeams }).map((_, idx) => (
                         <button
-                          onClick={() => setMyRole('noob')}
-                          className={`py-6 rounded-xl font-bold text-xl transition-all ${
-                            you.role === 'noob'
-                              ? 'bg-orange-500 text-white ring-4 ring-offset-2 ring-orange-500 scale-105'
-                              : 'bg-orange-200 text-orange-700 hover:bg-orange-300 hover:scale-105'
+                          key={idx}
+                          onClick={() => assignToTeam(idx)}
+                          className={`py-4 rounded-xl font-bold text-white hover:scale-105 transition-transform ${
+                            myPlayer.team === idx ? 'ring-4 ring-offset-2 ring-blue-500 scale-105' : ''
                           }`}
+                          style={{ backgroundColor: COLORS[idx] }}
                         >
-                          <div className="text-3xl mb-1">🎨</div>
-                          Noob
-                          <div className="text-xs mt-1">Describer</div>
+                          Team {idx + 1}
                         </button>
-                        <button
-                          onClick={() => setMyRole('pro')}
-                          className={`py-6 rounded-xl font-bold text-xl transition-all ${
-                            you.role === 'pro'
-                              ? 'bg-green-500 text-white ring-4 ring-offset-2 ring-green-500 scale-105'
-                              : 'bg-green-200 text-green-700 hover:bg-green-300 hover:scale-105'
-                          }`}
-                        >
-                          <div className="text-3xl mb-1">🎯</div>
-                          Pro
-                          <div className="text-xs mt-1">Guesser</div>
-                        </button>
-                      </div>
+                      ))}
                     </div>
-
-                    {/* Status */}
-                    {you.team !== null && you.role !== null && (
-                      <div className="text-center bg-green-100 border-2 border-green-400 rounded-xl p-4">
-                        <div className="text-green-700 font-bold text-lg">
-                          ✓ Ready! You're on Team {you.team + 1} as a {you.role === 'noob' ? 'Noob' : 'Pro'}
-                        </div>
-                      </div>
-                    )}
                   </div>
-                );
-              })()}
-            </div>
 
-            {/* Other Players */}
+                  <div>
+                    <div className="text-lg font-bold text-gray-800 mb-3 text-center">
+                      Select Role {myPlayer.role && `(Currently: ${myPlayer.role === 'noob' ? 'Noob' : 'Pro'})`}
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
+                      <button
+                        onClick={() => setMyRole('noob')}
+                        className={`py-6 rounded-xl font-bold text-xl transition-all ${
+                          myPlayer.role === 'noob'
+                            ? 'bg-orange-500 text-white ring-4 ring-offset-2 ring-orange-500 scale-105'
+                            : 'bg-orange-200 text-orange-700 hover:bg-orange-300 hover:scale-105'
+                        }`}
+                      >
+                        <div className="text-3xl mb-1">🎨</div>
+                        Noob
+                        <div className="text-xs mt-1">Describer</div>
+                      </button>
+                      <button
+                        onClick={() => setMyRole('pro')}
+                        className={`py-6 rounded-xl font-bold text-xl transition-all ${
+                          myPlayer.role === 'pro'
+                            ? 'bg-green-500 text-white ring-4 ring-offset-2 ring-green-500 scale-105'
+                            : 'bg-green-200 text-green-700 hover:bg-green-300 hover:scale-105'
+                        }`}
+                      >
+                        <div className="text-3xl mb-1">🎯</div>
+                        Pro
+                        <div className="text-xs mt-1">Guesser</div>
+                      </button>
+                    </div>
+                  </div>
+
+                  {myPlayer.team !== null && myPlayer.role !== null && (
+                    <div className="text-center bg-green-100 border-2 border-green-400 rounded-xl p-4">
+                      <div className="text-green-700 font-bold text-lg">
+                        ✓ Ready! You're on Team {myPlayer.team + 1} as a {myPlayer.role === 'noob' ? 'Noob' : 'Pro'}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="bg-gray-50 rounded-2xl p-6 mb-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-gray-800">Other Players Joining...</h3>
-                <button
-                  onClick={addPlayer}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-600 transition-colors text-sm"
-                >
-                  + Simulate Player Join
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                {players.filter(p => !p.isYou).map(player => (
-                  <div key={player.id} className="bg-white rounded-xl p-4 shadow">
-                    <div className="font-bold text-lg mb-2">{player.name}</div>
-                    {player.team !== null && player.role !== null ? (
-                      <div className="text-sm text-gray-600">
-                        <span className="font-bold" style={{ color: COLORS[player.team] }}>Team {player.team + 1}</span>
-                        {' · '}
-                        <span className={player.role === 'noob' ? 'text-orange-600' : 'text-green-600'}>
-                          {player.role === 'noob' ? 'Noob' : 'Pro'}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="text-sm text-gray-400 italic">Choosing team & role...</div>
-                    )}
-                  </div>
-                ))}
-              </div>
+              <h3 className="text-xl font-bold text-gray-800 mb-4">Other Players in Lobby</h3>
+              
+              {players.filter(p => p.id !== myPlayerId).length === 0 ? (
+                <div className="text-center text-gray-500 italic py-8">
+                  Waiting for other players to join...
+                  <div className="text-sm mt-2">Share the room code with your friends!</div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {players.filter(p => p.id !== myPlayerId).map(player => (
+                    <div key={player.id} className="bg-white rounded-xl p-4 shadow">
+                      <div className="font-bold text-lg mb-2">{player.name}</div>
+                      {player.team !== null && player.role !== null ? (
+                        <div className="text-sm text-gray-600">
+                          <span className="font-bold" style={{ color: COLORS[player.team] }}>Team {player.team + 1}</span>
+                          {' · '}
+                          <span className={player.role === 'noob' ? 'text-orange-600' : 'text-green-600'}>
+                            {player.role === 'noob' ? 'Noob' : 'Pro'}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="text-sm text-gray-400 italic">Choosing team & role...</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Bottom Bar */}
             <div className="flex justify-between items-center">
               <div className="bg-blue-50 border-2 border-blue-300 rounded-xl px-6 py-4">
                 <div className="text-sm font-bold text-blue-700 mb-1">Room Code</div>
@@ -540,324 +598,21 @@ export default function PokeDescribe() {
     );
   }
 
-  // GAME SCREENS (difficulty, describing, steal, round-end, game-over)
   if (screen === 'game') {
-    const currentTeam = teams[currentTeamIndex];
-
-    // Difficulty Selection
-    if (gameState === 'difficulty') {
-      return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-3xl shadow-2xl p-8 mb-6">
-              <div className="flex justify-between items-center mb-6">
-                <div className="text-2xl font-bold text-gray-800">Round {roundNumber}/{totalRounds}</div>
-                <div className="flex gap-4">
-                  {teams.map(team => (
-                    <div key={team.id} className="text-center">
-                      <div className="font-bold" style={{ color: team.color }}>{team.name}</div>
-                      <div className="text-3xl font-bold">{team.score}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="text-center mb-8">
-                <div className="inline-block bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-3 rounded-full text-xl font-bold mb-4">
-                  {currentTeam.name}'s Turn
-                </div>
-                <p className="text-gray-600 text-lg">
-                  <span className="font-bold">{currentTeam.noob}</span> (Noob), choose your difficulty!
-                </p>
-              </div>
-
-              <div className="grid grid-cols-3 gap-6">
-                <button
-                  onClick={() => selectDifficulty('easy')}
-                  className="bg-green-500 hover:bg-green-600 text-white rounded-2xl p-8 transition-all hover:scale-105 shadow-lg"
-                >
-                  <div className="text-4xl mb-2">😊</div>
-                  <div className="text-2xl font-bold mb-2">Easy</div>
-                  <div className="text-lg">1 Point</div>
-                  <div className="text-sm opacity-80 mt-2">Common Pokémon</div>
-                </button>
-
-                <button
-                  onClick={() => selectDifficulty('medium')}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white rounded-2xl p-8 transition-all hover:scale-105 shadow-lg"
-                >
-                  <div className="text-4xl mb-2">🤔</div>
-                  <div className="text-2xl font-bold mb-2">Medium</div>
-                  <div className="text-lg">2 Points</div>
-                  <div className="text-sm opacity-80 mt-2">Moderately Known</div>
-                </button>
-
-                <button
-                  onClick={() => selectDifficulty('hard')}
-                  className="bg-red-500 hover:bg-red-600 text-white rounded-2xl p-8 transition-all hover:scale-105 shadow-lg"
-                >
-                  <div className="text-4xl mb-2">😰</div>
-                  <div className="text-2xl font-bold mb-2">Hard</div>
-                  <div className="text-lg">3 Points</div>
-                  <div className="text-sm opacity-80 mt-2">Obscure Pokémon</div>
-                </button>
-              </div>
-            </div>
-          </div>
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8 flex items-center justify-center">
+        <div className="bg-white rounded-3xl shadow-2xl p-12 max-w-2xl w-full text-center">
+          <h2 className="text-4xl font-bold text-gray-800 mb-4">Game Starting Soon!</h2>
+          <p className="text-xl text-gray-600">The full game implementation with all rounds will be added next.</p>
+          <button
+            onClick={resetGame}
+            className="mt-8 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xl font-bold px-8 py-4 rounded-xl hover:scale-105 transition-transform shadow-lg"
+          >
+            Back to Main Menu
+          </button>
         </div>
-      );
-    }
-
-    // Describing Phase
-    if (gameState === 'describing') {
-      return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-3 gap-6">
-              {/* Left: Noob View */}
-              <div className="col-span-1 bg-white rounded-3xl shadow-2xl p-6">
-                <div className="text-center mb-4">
-                  <div className="text-xl font-bold text-purple-600 mb-2">NOOB VIEW ONLY</div>
-                  <div className="text-lg text-gray-600">{currentTeam.noob}</div>
-                </div>
-
-                <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl p-6 mb-4">
-                  <img 
-                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${currentPokemon.sprite}.png`}
-                    alt="Pokemon"
-                    className="w-full h-auto"
-                  />
-                  <div className="text-center mt-4 text-2xl font-bold text-gray-800">
-                    {currentPokemon.name}
-                  </div>
-                </div>
-
-                <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4">
-                  <div className="font-bold text-red-700 mb-2">Remember:</div>
-                  <ul className="text-sm text-gray-700 space-y-1">
-                    <li>✓ Describe colors, shapes, vibes</li>
-                    <li>✗ Don't say the name!</li>
-                    <li>✗ Don't spell letters</li>
-                  </ul>
-                </div>
-              </div>
-
-              {/* Right: Game View */}
-              <div className="col-span-2 space-y-6">
-                <div className="bg-white rounded-3xl shadow-2xl p-8">
-                  <div className="flex justify-between items-center mb-6">
-                    <div>
-                      <div className="text-3xl font-bold" style={{ color: currentTeam.color }}>
-                        {currentTeam.name}
-                      </div>
-                      <div className="text-gray-600">Pros: {currentTeam.pros.join(', ')}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm text-gray-500">Round {roundNumber}/{totalRounds}</div>
-                      <div className="text-4xl font-bold">{currentTeam.score} pts</div>
-                    </div>
-                  </div>
-
-                  <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl p-6 mb-6">
-                    <div className="text-center">
-                      <div className="text-white text-6xl font-bold mb-2">{timeLeft}s</div>
-                      <div className="text-white text-xl">
-                        {currentTeam.noob} is describing...
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <input
-                      type="text"
-                      value={guessInput}
-                      onChange={(e) => setGuessInput(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleGuess(currentTeamIndex)}
-                      placeholder="Type your guess..."
-                      className="w-full px-6 py-4 text-xl border-2 border-gray-300 rounded-xl focus:outline-none focus:border-purple-500"
-                      autoFocus
-                    />
-                    <button
-                      onClick={() => handleGuess(currentTeamIndex)}
-                      className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white text-xl font-bold py-4 rounded-xl hover:scale-105 transition-transform shadow-lg"
-                    >
-                      Submit Guess
-                    </button>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-2xl shadow-xl p-6">
-                  <div className="font-bold text-gray-800 mb-3">Scoreboard</div>
-                  <div className="grid grid-cols-4 gap-4">
-                    {teams.map(team => (
-                      <div key={team.id} className="text-center p-3 rounded-xl" style={{ backgroundColor: `${team.color}20` }}>
-                        <div className="font-bold" style={{ color: team.color }}>{team.name}</div>
-                        <div className="text-2xl font-bold">{team.score}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // Steal Phase
-    if (gameState === 'steal') {
-      return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-400 via-red-400 to-pink-400 p-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-3xl shadow-2xl p-8">
-              <div className="text-center mb-6">
-                <div className="text-5xl mb-4">⚡</div>
-                <div className="text-4xl font-bold text-red-600 mb-2">STEAL PHASE!</div>
-                <div className="text-2xl text-gray-600">Other teams can steal the points!</div>
-              </div>
-
-              <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-2xl p-6 mb-6">
-                <div className="text-center">
-                  <div className="text-white text-6xl font-bold">{timeLeft}s</div>
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <div className="text-lg font-bold text-gray-800 mb-3">Select your team:</div>
-                <div className="grid grid-cols-4 gap-3 mb-4">
-                  {teams.filter((_, i) => i !== currentTeamIndex).map((team) => (
-                    <button
-                      key={team.id}
-                      onClick={() => setStealTeamIndex(team.id)}
-                      className={`p-4 rounded-xl font-bold transition-all ${
-                        stealTeamIndex === team.id
-                          ? 'ring-4 ring-purple-500 scale-105'
-                          : 'hover:scale-105'
-                      }`}
-                      style={{ backgroundColor: team.color, color: 'white' }}
-                    >
-                      {team.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <input
-                  type="text"
-                  value={guessInput}
-                  onChange={(e) => setGuessInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && stealTeamIndex !== null && handleGuess(stealTeamIndex)}
-                  placeholder="Type your guess..."
-                  className="w-full px-6 py-4 text-xl border-2 border-gray-300 rounded-xl focus:outline-none focus:border-red-500"
-                  disabled={stealTeamIndex === null}
-                />
-                <button
-                  onClick={() => stealTeamIndex !== null && handleGuess(stealTeamIndex)}
-                  disabled={stealTeamIndex === null}
-                  className="w-full bg-gradient-to-r from-red-500 to-orange-500 text-white text-xl font-bold py-4 rounded-xl hover:scale-105 transition-transform shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Steal the Points!
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // Round End
-    if (gameState === 'round-end') {
-      return (
-        <div className="min-h-screen bg-gradient-to-br from-green-400 via-blue-400 to-purple-400 p-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-3xl shadow-2xl p-8">
-              <div className="text-center mb-8">
-                <div className="text-6xl mb-4">🎉</div>
-                <div className="text-4xl font-bold text-green-600 mb-4">Round Complete!</div>
-                <div className="text-2xl text-gray-600 mb-4">The Pokémon was:</div>
-                <div className="text-5xl font-bold text-purple-600">{currentPokemon.name}</div>
-              </div>
-
-              <div className="mb-8">
-                <img 
-                  src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${currentPokemon.sprite}.png`}
-                  alt={currentPokemon.name}
-                  className="w-64 h-64 mx-auto"
-                />
-              </div>
-
-              <div className="bg-gray-50 rounded-2xl p-6 mb-8">
-                <div className="font-bold text-xl text-gray-800 mb-4 text-center">Current Scores</div>
-                <div className="grid grid-cols-4 gap-4">
-                  {teams.map(team => (
-                    <div key={team.id} className="text-center p-4 rounded-xl" style={{ backgroundColor: `${team.color}20` }}>
-                      <div className="font-bold text-lg" style={{ color: team.color }}>{team.name}</div>
-                      <div className="text-4xl font-bold">{team.score}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <button
-                onClick={nextRound}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-2xl font-bold py-6 rounded-xl hover:scale-105 transition-transform shadow-lg"
-              >
-                {roundNumber >= totalRounds ? 'See Final Results' : 'Next Round'}
-              </button>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // Game Over
-    if (gameState === 'game-over') {
-      const sortedTeams = [...teams].sort((a, b) => b.score - a.score);
-      const winner = sortedTeams[0];
-
-      return (
-        <div className="min-h-screen bg-gradient-to-br from-yellow-400 via-orange-400 to-red-400 p-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-3xl shadow-2xl p-8">
-              <div className="text-center mb-8">
-                <div className="text-7xl mb-4">🏆</div>
-                <div className="text-5xl font-bold text-yellow-600 mb-4">Game Over!</div>
-                <div className="text-3xl font-bold mb-2" style={{ color: winner.color }}>
-                  {winner.name} Wins!
-                </div>
-                <div className="text-6xl font-bold text-purple-600">{winner.score} Points</div>
-              </div>
-
-              <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-6 mb-8">
-                <div className="font-bold text-2xl text-gray-800 mb-4 text-center">Final Standings</div>
-                <div className="space-y-3">
-                  {sortedTeams.map((team, index) => (
-                    <div key={team.id} className="flex items-center justify-between p-4 rounded-xl bg-white shadow">
-                      <div className="flex items-center gap-4">
-                        <div className="text-3xl font-bold text-gray-400">#{index + 1}</div>
-                        <div>
-                          <div className="font-bold text-xl" style={{ color: team.color }}>{team.name}</div>
-                          <div className="text-sm text-gray-500">{team.noob} & {team.pros.join(', ')}</div>
-                        </div>
-                      </div>
-                      <div className="text-4xl font-bold" style={{ color: team.color }}>{team.score}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <button
-                onClick={resetGame}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-2xl font-bold py-6 rounded-xl hover:scale-105 transition-transform shadow-lg"
-              >
-                Play Again
-              </button>
-            </div>
-          </div>
-        </div>
-      );
-    }
+      </div>
+    );
   }
 
   return null;
