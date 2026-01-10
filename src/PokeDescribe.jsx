@@ -1,3 +1,4 @@
+
 /* eslint-disable */
 import React, { useState, useEffect } from 'react';
 import { Copy, Check } from 'lucide-react';
@@ -64,145 +65,33 @@ export default function PokeDescribe() {
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const getRoomKey = (code) => `room:${code}`;
-  const getPlayersKey = (code) => `players:${code}`;
-
-  // Check if we're using claude.ai storage or localStorage
-  const hasClaudeStorage = typeof window !== 'undefined' && window.storage;
-
-  useEffect(() => {
-    if (screen === 'lobby' && roomCode) {
-      const interval = setInterval(() => {
-        loadRoomPlayers();
-      }, 2000);
-      return () => clearInterval(interval);
-    }
-  }, [screen, roomCode]);
-
-  const loadRoomPlayers = async () => {
-    try {
-      if (hasClaudeStorage) {
-        const result = await window.storage.get(getPlayersKey(roomCode), true);
-        if (result?.value) {
-          const loadedPlayers = JSON.parse(result.value);
-          setPlayers(loadedPlayers);
-        }
-      } else {
-        // Use localStorage for deployed website
-        const stored = localStorage.getItem(getPlayersKey(roomCode));
-        if (stored) {
-          const loadedPlayers = JSON.parse(stored);
-          setPlayers(loadedPlayers);
-        }
-      }
-    } catch (error) {
-      console.log('Room loading...');
-    }
-  };
-
-  const saveRoomPlayers = async (updatedPlayers) => {
-    try {
-      if (hasClaudeStorage) {
-        await window.storage.set(getPlayersKey(roomCode), JSON.stringify(updatedPlayers), true);
-      } else {
-        // Use localStorage for deployed website
-        localStorage.setItem(getPlayersKey(roomCode), JSON.stringify(updatedPlayers));
-      }
-      setPlayers(updatedPlayers);
-    } catch (error) {
-      console.error('Failed to save players:', error);
-    }
-  };
-
-  const createGame = async () => {
+  const createGame = () => {
     const code = generateRoomCode();
     const name = playerName.trim() || 'Player';
     const playerId = Date.now().toString();
     
     setRoomCode(code);
     setMyPlayerId(playerId);
-    setIsLoading(true);
-
-    try {
-      if (hasClaudeStorage) {
-        await window.storage.set(getRoomKey(code), JSON.stringify({ created: Date.now() }), true);
-        const initialPlayers = [{ id: playerId, name: name, team: null, role: null }];
-        await window.storage.set(getPlayersKey(code), JSON.stringify(initialPlayers), true);
-        setPlayers(initialPlayers);
-      } else {
-        // Use localStorage for deployed website
-        localStorage.setItem(getRoomKey(code), JSON.stringify({ created: Date.now() }));
-        const initialPlayers = [{ id: playerId, name: name, team: null, role: null }];
-        localStorage.setItem(getPlayersKey(code), JSON.stringify(initialPlayers));
-        setPlayers(initialPlayers);
-      }
-      
-      setScreen('lobby');
-    } catch (error) {
-      setErrorMessage('Failed to create game. Please try again.');
-      setTimeout(() => setErrorMessage(''), 3000);
-    } finally {
-      setIsLoading(false);
-    }
+    setPlayers([{ id: playerId, name: name, team: null, role: null }]);
+    setScreen('lobby');
   };
 
-  const joinGame = async () => {
+  const joinGame = () => {
     if (joinCodeInput.trim().length < 4) return;
     
     const code = joinCodeInput.toUpperCase();
     const name = playerName.trim() || 'Player';
     const playerId = Date.now().toString();
     
-    setIsLoading(true);
-
-    try {
-      let roomExists = false;
-      
-      if (hasClaudeStorage) {
-        const roomResult = await window.storage.get(getRoomKey(code), true);
-        roomExists = !!roomResult;
-      } else {
-        // Use localStorage for deployed website
-        const stored = localStorage.getItem(getRoomKey(code));
-        roomExists = !!stored;
-      }
-      
-      if (!roomExists) {
-        setErrorMessage('Room code not found! Please check the code and try again.');
-        setTimeout(() => setErrorMessage(''), 3000);
-        setIsLoading(false);
-        return;
-      }
-
-      let existingPlayers = [];
-      
-      if (hasClaudeStorage) {
-        const playersResult = await window.storage.get(getPlayersKey(code), true);
-        existingPlayers = playersResult ? JSON.parse(playersResult.value) : [];
-      } else {
-        const stored = localStorage.getItem(getPlayersKey(code));
-        existingPlayers = stored ? JSON.parse(stored) : [];
-      }
-      
-      const newPlayer = { id: playerId, name: name, team: null, role: null };
-      const updatedPlayers = [...existingPlayers, newPlayer];
-      
-      if (hasClaudeStorage) {
-        await window.storage.set(getPlayersKey(code), JSON.stringify(updatedPlayers), true);
-      } else {
-        localStorage.setItem(getPlayersKey(code), JSON.stringify(updatedPlayers));
-      }
-      
+    // For demo purposes - in real deployment this will check Firebase
+    setErrorMessage('⚠️ Firebase not configured in artifact. Deploy to your website to enable real multiplayer!');
+    setTimeout(() => {
+      setErrorMessage('');
       setRoomCode(code);
       setMyPlayerId(playerId);
-      setPlayers(updatedPlayers);
+      setPlayers([{ id: playerId, name: name, team: null, role: null }]);
       setScreen('lobby');
-    } catch (error) {
-      setErrorMessage('Failed to join game. Please try again.');
-      setTimeout(() => setErrorMessage(''), 3000);
-    } finally {
-      setIsLoading(false);
-    }
+    }, 2000);
   };
 
   const copyRoomCode = () => {
@@ -211,17 +100,17 @@ export default function PokeDescribe() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const assignToTeam = async (teamIndex) => {
+  const assignToTeam = (teamIndex) => {
     const updatedPlayers = players.map(p => 
       p.id === myPlayerId ? { ...p, team: teamIndex } : p
     );
-    await saveRoomPlayers(updatedPlayers);
+    setPlayers(updatedPlayers);
   };
 
-  const setMyRole = async (role) => {
+  const setMyRole = (role) => {
     const myPlayer = players.find(p => p.id === myPlayerId);
     
-    if (role === 'noob' && myPlayer.team !== null) {
+    if (role === 'noob' && myPlayer?.team !== null) {
       const teamPlayers = players.filter(p => p.team === myPlayer.team && p.id !== myPlayerId);
       const hasNoob = teamPlayers.some(p => p.role === 'noob');
       
@@ -235,7 +124,7 @@ export default function PokeDescribe() {
     const updatedPlayers = players.map(p => 
       p.id === myPlayerId ? { ...p, role } : p
     );
-    await saveRoomPlayers(updatedPlayers);
+    setPlayers(updatedPlayers);
   };
 
   const startGame = () => {
@@ -347,9 +236,15 @@ export default function PokeDescribe() {
 
           {errorMessage && (
             <div className="mb-6 bg-red-100 border-2 border-red-400 rounded-xl p-4 text-center">
-              <div className="text-red-700 font-bold text-lg">⚠️ {errorMessage}</div>
+              <div className="text-red-700 font-bold text-lg">{errorMessage}</div>
             </div>
           )}
+
+          <div className="mb-6 bg-blue-50 border-2 border-blue-300 rounded-xl p-4">
+            <div className="text-blue-800 text-sm">
+              <strong>📝 Note:</strong> This is a demo version. For real multiplayer, you need to deploy with Firebase configured in VS Code.
+            </div>
+          </div>
 
           <div className="mb-8">
             <label className="block text-lg font-bold text-gray-700 mb-3">Your Display Name</label>
@@ -407,7 +302,7 @@ export default function PokeDescribe() {
 
           {errorMessage && (
             <div className="mb-6 bg-red-100 border-2 border-red-400 rounded-xl p-4 text-center">
-              <div className="text-red-700 font-bold text-lg">⚠️ {errorMessage}</div>
+              <div className="text-red-700 font-bold">{errorMessage}</div>
             </div>
           )}
 
@@ -459,6 +354,9 @@ export default function PokeDescribe() {
                 Game Lobby
               </h1>
               <p className="text-xl text-gray-600">Choose your team and role</p>
+              <div className="mt-2 text-sm text-gray-500">
+                {players.length} player{players.length !== 1 ? 's' : ''} in lobby
+              </div>
             </div>
 
             {errorMessage && (
@@ -583,36 +481,6 @@ export default function PokeDescribe() {
               </div>
             )}
 
-            <div className="bg-gray-50 rounded-2xl p-6 mb-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Other Players in Lobby</h3>
-              
-              {players.filter(p => p.id !== myPlayerId).length === 0 ? (
-                <div className="text-center text-gray-500 italic py-8">
-                  Waiting for other players to join...
-                  <div className="text-sm mt-2">Share the room code with your friends!</div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  {players.filter(p => p.id !== myPlayerId).map(player => (
-                    <div key={player.id} className="bg-white rounded-xl p-4 shadow">
-                      <div className="font-bold text-lg mb-2">{player.name}</div>
-                      {player.team !== null && player.role !== null ? (
-                        <div className="text-sm text-gray-600">
-                          <span className="font-bold" style={{ color: COLORS[player.team] }}>Team {player.team + 1}</span>
-                          {' · '}
-                          <span className={player.role === 'noob' ? 'text-orange-600' : 'text-green-600'}>
-                            {player.role === 'noob' ? 'Noob' : 'Pro'}
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="text-sm text-gray-400 italic">Choosing team & role...</div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
             <div className="flex justify-between items-center">
               <div className="bg-blue-50 border-2 border-blue-300 rounded-xl px-6 py-4">
                 <div className="text-sm font-bold text-blue-700 mb-1">Room Code</div>
@@ -647,10 +515,11 @@ export default function PokeDescribe() {
       <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8 flex items-center justify-center">
         <div className="bg-white rounded-3xl shadow-2xl p-12 max-w-2xl w-full text-center">
           <h2 className="text-4xl font-bold text-gray-800 mb-4">Game Starting Soon!</h2>
-          <p className="text-xl text-gray-600">The full game implementation with all rounds will be added next.</p>
+          <p className="text-xl text-gray-600 mb-4">The full game implementation with all rounds will be added next.</p>
+          <p className="text-sm text-gray-500 mb-8">Deploy with Firebase for full multiplayer functionality</p>
           <button
             onClick={resetGame}
-            className="mt-8 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xl font-bold px-8 py-4 rounded-xl hover:scale-105 transition-transform shadow-lg"
+            className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xl font-bold px-8 py-4 rounded-xl hover:scale-105 transition-transform shadow-lg"
           >
             Back to Main Menu
           </button>
