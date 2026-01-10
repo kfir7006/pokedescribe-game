@@ -67,6 +67,9 @@ export default function PokeDescribe() {
   const getRoomKey = (code) => `room:${code}`;
   const getPlayersKey = (code) => `players:${code}`;
 
+  // Check if we're using claude.ai storage or localStorage
+  const hasClaudeStorage = typeof window !== 'undefined' && window.storage;
+
   useEffect(() => {
     if (screen === 'lobby' && roomCode) {
       const interval = setInterval(() => {
@@ -78,10 +81,19 @@ export default function PokeDescribe() {
 
   const loadRoomPlayers = async () => {
     try {
-      const result = await window.storage.get(getPlayersKey(roomCode), true);
-      if (result?.value) {
-        const loadedPlayers = JSON.parse(result.value);
-        setPlayers(loadedPlayers);
+      if (hasClaudeStorage) {
+        const result = await window.storage.get(getPlayersKey(roomCode), true);
+        if (result?.value) {
+          const loadedPlayers = JSON.parse(result.value);
+          setPlayers(loadedPlayers);
+        }
+      } else {
+        // Use localStorage for deployed website
+        const stored = localStorage.getItem(getPlayersKey(roomCode));
+        if (stored) {
+          const loadedPlayers = JSON.parse(stored);
+          setPlayers(loadedPlayers);
+        }
       }
     } catch (error) {
       console.log('Room loading...');
@@ -90,7 +102,12 @@ export default function PokeDescribe() {
 
   const saveRoomPlayers = async (updatedPlayers) => {
     try {
-      await window.storage.set(getPlayersKey(roomCode), JSON.stringify(updatedPlayers), true);
+      if (hasClaudeStorage) {
+        await window.storage.set(getPlayersKey(roomCode), JSON.stringify(updatedPlayers), true);
+      } else {
+        // Use localStorage for deployed website
+        localStorage.setItem(getPlayersKey(roomCode), JSON.stringify(updatedPlayers));
+      }
       setPlayers(updatedPlayers);
     } catch (error) {
       console.error('Failed to save players:', error);
@@ -107,12 +124,19 @@ export default function PokeDescribe() {
     setIsLoading(true);
 
     try {
-      await window.storage.set(getRoomKey(code), JSON.stringify({ created: Date.now() }), true);
+      if (hasClaudeStorage) {
+        await window.storage.set(getRoomKey(code), JSON.stringify({ created: Date.now() }), true);
+        const initialPlayers = [{ id: playerId, name: name, team: null, role: null }];
+        await window.storage.set(getPlayersKey(code), JSON.stringify(initialPlayers), true);
+        setPlayers(initialPlayers);
+      } else {
+        // Use localStorage for deployed website
+        localStorage.setItem(getRoomKey(code), JSON.stringify({ created: Date.now() }));
+        const initialPlayers = [{ id: playerId, name: name, team: null, role: null }];
+        localStorage.setItem(getPlayersKey(code), JSON.stringify(initialPlayers));
+        setPlayers(initialPlayers);
+      }
       
-      const initialPlayers = [{ id: playerId, name: name, team: null, role: null }];
-      await window.storage.set(getPlayersKey(code), JSON.stringify(initialPlayers), true);
-      
-      setPlayers(initialPlayers);
       setScreen('lobby');
     } catch (error) {
       setErrorMessage('Failed to create game. Please try again.');
@@ -132,22 +156,42 @@ export default function PokeDescribe() {
     setIsLoading(true);
 
     try {
-      const roomResult = await window.storage.get(getRoomKey(code), true);
+      let roomExists = false;
       
-      if (!roomResult) {
+      if (hasClaudeStorage) {
+        const roomResult = await window.storage.get(getRoomKey(code), true);
+        roomExists = !!roomResult;
+      } else {
+        // Use localStorage for deployed website
+        const stored = localStorage.getItem(getRoomKey(code));
+        roomExists = !!stored;
+      }
+      
+      if (!roomExists) {
         setErrorMessage('Room code not found! Please check the code and try again.');
         setTimeout(() => setErrorMessage(''), 3000);
         setIsLoading(false);
         return;
       }
 
-      const playersResult = await window.storage.get(getPlayersKey(code), true);
-      const existingPlayers = playersResult ? JSON.parse(playersResult.value) : [];
+      let existingPlayers = [];
+      
+      if (hasClaudeStorage) {
+        const playersResult = await window.storage.get(getPlayersKey(code), true);
+        existingPlayers = playersResult ? JSON.parse(playersResult.value) : [];
+      } else {
+        const stored = localStorage.getItem(getPlayersKey(code));
+        existingPlayers = stored ? JSON.parse(stored) : [];
+      }
       
       const newPlayer = { id: playerId, name: name, team: null, role: null };
       const updatedPlayers = [...existingPlayers, newPlayer];
       
-      await window.storage.set(getPlayersKey(code), JSON.stringify(updatedPlayers), true);
+      if (hasClaudeStorage) {
+        await window.storage.set(getPlayersKey(code), JSON.stringify(updatedPlayers), true);
+      } else {
+        localStorage.setItem(getPlayersKey(code), JSON.stringify(updatedPlayers));
+      }
       
       setRoomCode(code);
       setMyPlayerId(playerId);
