@@ -216,6 +216,7 @@ export default function PokeDescribe() {
 
     setTeams(newTeams);
     setScreen('game');
+setGameState('difficulty');
   };
 
   useEffect(() => {
@@ -579,7 +580,7 @@ export default function PokeDescribe() {
               )}
             </div>
 
-            <div className="flex justify-between items-center">
+           <div className="flex justify-between items-center">
               <div className="bg-blue-50 border-2 border-blue-300 rounded-xl px-6 py-4">
                 <div className="text-sm font-bold text-blue-700 mb-1">Room Code</div>
                 <div className="flex items-center gap-3">
@@ -606,24 +607,328 @@ export default function PokeDescribe() {
         </div>
       </div>
     );
-  }
-
+   
+}
+// GAME SCREENS - Add this section before "return null;"
+  
   if (screen === 'game') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8 flex items-center justify-center">
-        <div className="bg-white rounded-3xl shadow-2xl p-12 max-w-2xl w-full text-center">
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">Game Starting Soon!</h2>
-          <p className="text-xl text-gray-600 mb-4">The full game implementation with all rounds will be added next.</p>
-          <button
-            onClick={resetGame}
-            className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xl font-bold px-8 py-4 rounded-xl hover:scale-105 transition-transform shadow-lg"
-          >
-            Back to Main Menu
-          </button>
+    const currentTeam = teams[currentTeamIndex];
+
+    // Difficulty Selection
+    if (gameState === 'difficulty') {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-3xl shadow-2xl p-8">
+              <div className="flex justify-between items-center mb-6">
+                <div className="text-2xl font-bold text-gray-800">Round {roundNumber}/{totalRounds}</div>
+                <div className="flex gap-4">
+                  {teams.map(team => (
+                    <div key={team.id} className="text-center">
+                      <div className="font-bold" style={{ color: team.color }}>{team.name}</div>
+                      <div className="text-3xl font-bold">{team.score}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="text-center mb-8">
+                <div className="inline-block bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-3 rounded-full text-xl font-bold mb-4">
+                  {currentTeam.name}'s Turn
+                </div>
+                <p className="text-gray-600 text-lg">
+                  <span className="font-bold">{currentTeam.noob}</span> (Noob), choose your difficulty!
+                </p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-6">
+                <button
+                  onClick={() => selectDifficulty('easy')}
+                  className="bg-green-500 hover:bg-green-600 text-white rounded-2xl p-8 transition-all hover:scale-105 shadow-lg"
+                >
+                  <div className="text-4xl mb-2">😊</div>
+                  <div className="text-2xl font-bold mb-2">Easy</div>
+                  <div className="text-lg">1 Point</div>
+                  <div className="text-sm opacity-80 mt-2">Common Pokémon</div>
+                </button>
+
+                <button
+                  onClick={() => selectDifficulty('medium')}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white rounded-2xl p-8 transition-all hover:scale-105 shadow-lg"
+                >
+                  <div className="text-4xl mb-2">🤔</div>
+                  <div className="text-2xl font-bold mb-2">Medium</div>
+                  <div className="text-lg">2 Points</div>
+                  <div className="text-sm opacity-80 mt-2">Moderately Known</div>
+                </button>
+
+                <button
+                  onClick={() => selectDifficulty('hard')}
+                  className="bg-red-500 hover:bg-red-600 text-white rounded-2xl p-8 transition-all hover:scale-105 shadow-lg"
+                >
+                  <div className="text-4xl mb-2">😰</div>
+                  <div className="text-2xl font-bold mb-2">Hard</div>
+                  <div className="text-lg">3 Points</div>
+                  <div className="text-sm opacity-80 mt-2">Obscure Pokémon</div>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+
+    // Describing Phase - NEXT SCREEN
+    if (gameState === 'describing') {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-3 gap-6">
+              {/* Noob View */}
+              <div className="col-span-1 bg-white rounded-3xl shadow-2xl p-6">
+                <div className="text-center mb-4">
+                  <div className="text-xl font-bold text-purple-600 mb-2">NOOB VIEW ONLY</div>
+                  <div className="text-lg text-gray-600">{currentTeam.noob}</div>
+                </div>
+
+                <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl p-6 mb-4">
+                  <img 
+                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${currentPokemon.sprite}.png`}
+                    alt="Pokemon"
+                    className="w-full h-auto"
+                  />
+                  <div className="text-center mt-4 text-2xl font-bold text-gray-800">
+                    {currentPokemon.name}
+                  </div>
+                </div>
+
+                <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4">
+                  <div className="font-bold text-red-700 mb-2">Remember:</div>
+                  <ul className="text-sm text-gray-700 space-y-1">
+                    <li>✓ Describe colors, shapes, vibes</li>
+                    <li>✗ Don't say the name!</li>
+                    <li>✗ Don't spell letters</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Game View */}
+              <div className="col-span-2 space-y-6">
+                <div className="bg-white rounded-3xl shadow-2xl p-8">
+                  <div className="flex justify-between items-center mb-6">
+                    <div>
+                      <div className="text-3xl font-bold" style={{ color: currentTeam.color }}>
+                        {currentTeam.name}
+                      </div>
+                      <div className="text-gray-600">Pros: {currentTeam.pros.join(', ')}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm text-gray-500">Round {roundNumber}/{totalRounds}</div>
+                      <div className="text-4xl font-bold">{currentTeam.score} pts</div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl p-6 mb-6">
+                    <div className="text-center">
+                      <div className="text-white text-6xl font-bold mb-2">{timeLeft}s</div>
+                      <div className="text-white text-xl">
+                        {currentTeam.noob} is describing...
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <input
+                      type="text"
+                      value={guessInput}
+                      onChange={(e) => setGuessInput(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleGuess(currentTeamIndex)}
+                      placeholder="Type your guess..."
+                      className="w-full px-6 py-4 text-xl border-2 border-gray-300 rounded-xl focus:outline-none focus:border-purple-500"
+                      autoFocus
+                    />
+                    <button
+                      onClick={() => handleGuess(currentTeamIndex)}
+                      className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white text-xl font-bold py-4 rounded-xl hover:scale-105 transition-transform shadow-lg"
+                    >
+                      Submit Guess
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-2xl shadow-xl p-6">
+                  <div className="font-bold text-gray-800 mb-3">Scoreboard</div>
+                  <div className="grid grid-cols-4 gap-4">
+                    {teams.map(team => (
+                      <div key={team.id} className="text-center p-3 rounded-xl" style={{ backgroundColor: `${team.color}20` }}>
+                        <div className="font-bold" style={{ color: team.color }}>{team.name}</div>
+                        <div className="text-2xl font-bold">{team.score}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Steal Phase
+    if (gameState === 'steal') {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-orange-400 via-red-400 to-pink-400 p-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-3xl shadow-2xl p-8">
+              <div className="text-center mb-6">
+                <div className="text-5xl mb-4">⚡</div>
+                <div className="text-4xl font-bold text-red-600 mb-2">STEAL PHASE!</div>
+                <div className="text-2xl text-gray-600">Other teams can steal the points!</div>
+              </div>
+
+              <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-2xl p-6 mb-6">
+                <div className="text-center">
+                  <div className="text-white text-6xl font-bold">{timeLeft}s</div>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <div className="text-lg font-bold text-gray-800 mb-3">Select your team:</div>
+                <div className="grid grid-cols-4 gap-3 mb-4">
+                  {teams.filter((_, i) => i !== currentTeamIndex).map((team) => (
+                    <button
+                      key={team.id}
+                      onClick={() => setStealTeamIndex(team.id)}
+                      className={`p-4 rounded-xl font-bold transition-all ${
+                        stealTeamIndex === team.id
+                          ? 'ring-4 ring-purple-500 scale-105'
+                          : 'hover:scale-105'
+                      }`}
+                      style={{ backgroundColor: team.color, color: 'white' }}
+                    >
+                      {team.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  value={guessInput}
+                  onChange={(e) => setGuessInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && stealTeamIndex !== null && handleGuess(stealTeamIndex)}
+                  placeholder="Type your guess..."
+                  className="w-full px-6 py-4 text-xl border-2 border-gray-300 rounded-xl focus:outline-none focus:border-red-500"
+                  disabled={stealTeamIndex === null}
+                />
+                <button
+                  onClick={() => stealTeamIndex !== null && handleGuess(stealTeamIndex)}
+                  disabled={stealTeamIndex === null}
+                  className="w-full bg-gradient-to-r from-red-500 to-orange-500 text-white text-xl font-bold py-4 rounded-xl hover:scale-105 transition-transform shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Steal the Points!
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Round End
+    if (gameState === 'round-end') {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-green-400 via-blue-400 to-purple-400 p-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-3xl shadow-2xl p-8">
+              <div className="text-center mb-8">
+                <div className="text-6xl mb-4">🎉</div>
+                <div className="text-4xl font-bold text-green-600 mb-4">Round Complete!</div>
+                <div className="text-2xl text-gray-600 mb-4">The Pokémon was:</div>
+                <div className="text-5xl font-bold text-purple-600">{currentPokemon.name}</div>
+              </div>
+
+              <div className="mb-8">
+                <img 
+                  src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${currentPokemon.sprite}.png`}
+                  alt={currentPokemon.name}
+                  className="w-64 h-64 mx-auto"
+                />
+              </div>
+
+              <div className="bg-gray-50 rounded-2xl p-6 mb-8">
+                <div className="font-bold text-xl text-gray-800 mb-4 text-center">Current Scores</div>
+                <div className="grid grid-cols-4 gap-4">
+                  {teams.map(team => (
+                    <div key={team.id} className="text-center p-4 rounded-xl" style={{ backgroundColor: `${team.color}20` }}>
+                      <div className="font-bold text-lg" style={{ color: team.color }}>{team.name}</div>
+                      <div className="text-4xl font-bold">{team.score}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                onClick={nextRound}
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-2xl font-bold py-6 rounded-xl hover:scale-105 transition-transform shadow-lg"
+              >
+                {roundNumber >= totalRounds ? 'See Final Results' : 'Next Round'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Game Over
+    if (gameState === 'game-over') {
+      const sortedTeams = [...teams].sort((a, b) => b.score - a.score);
+      const winner = sortedTeams[0];
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-yellow-400 via-orange-400 to-red-400 p-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-3xl shadow-2xl p-8">
+              <div className="text-center mb-8">
+                <div className="text-7xl mb-4">🏆</div>
+                <div className="text-5xl font-bold text-yellow-600 mb-4">Game Over!</div>
+                <div className="text-3xl font-bold mb-2" style={{ color: winner.color }}>
+                  {winner.name} Wins!
+                </div>
+                <div className="text-6xl font-bold text-purple-600">{winner.score} Points</div>
+              </div>
+
+              <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-6 mb-8">
+                <div className="font-bold text-2xl text-gray-800 mb-4 text-center">Final Standings</div>
+                <div className="space-y-3">
+                  {sortedTeams.map((team, index) => (
+                    <div key={team.id} className="flex items-center justify-between p-4 rounded-xl bg-white shadow">
+                      <div className="flex items-center gap-4">
+                        <div className="text-3xl font-bold text-gray-400">#{index + 1}</div>
+                        <div>
+                          <div className="font-bold text-xl" style={{ color: team.color }}>{team.name}</div>
+                          <div className="text-sm text-gray-500">{team.noob} & {team.pros.join(', ')}</div>
+                        </div>
+                      </div>
+                      <div className="text-4xl font-bold" style={{ color: team.color }}>{team.score}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                onClick={resetGame}
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-2xl font-bold py-6 rounded-xl hover:scale-105 transition-transform shadow-lg"
+              >
+                Play Again
+              </button>
+            </div>
+          </div>
+        </div>
+      );
   }
 
   return null;
+}
+
 }
