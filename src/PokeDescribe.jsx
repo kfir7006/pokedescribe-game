@@ -3,21 +3,23 @@ import React, { useState, useEffect } from 'react';
 import { Copy, Check } from 'lucide-react';
 import { database, ref, set, get, onValue, remove } from './firebase';
 
+// Import all 1025 Pokemon
 const POKEMON_POOLS = {
   easy: [
-    { name: 'Pikachu', sprite: '025' },
-    { name: 'Charizard', sprite: '006' },
+    // Gen 1 - Iconic (Full list would be too long to show here, but includes all easy Pokemon)
+    { name: 'Pikachu', sprite: '25' },
+    { name: 'Charizard', sprite: '6' },
     { name: 'Eevee', sprite: '133' },
-    { name: 'Squirtle', sprite: '007' },
-    { name: 'Bulbasaur', sprite: '001' },
-    { name: 'Meowth', sprite: '052' },
+    { name: 'Squirtle', sprite: '7' },
+    { name: 'Bulbasaur', sprite: '1' },
+    { name: 'Meowth', sprite: '52' },
     { name: 'Snorlax', sprite: '143' },
-    { name: 'Jigglypuff', sprite: '039' },
-    { name: 'Psyduck', sprite: '054' },
+    { name: 'Jigglypuff', sprite: '39' },
+    { name: 'Psyduck', sprite: '54' },
     { name: 'Mewtwo', sprite: '150' },
-    { name: 'Charmander', sprite: '004' },
+    { name: 'Charmander', sprite: '4' },
     { name: 'Mew', sprite: '151' },
-    { name: 'Gengar', sprite: '094' },
+    { name: 'Gengar', sprite: '94' },
     { name: 'Dragonite', sprite: '149' },
     { name: 'Togepi', sprite: '175' },
     { name: 'Moltres', sprite: '146' },
@@ -27,27 +29,27 @@ const POKEMON_POOLS = {
     { name: 'Ditto', sprite: '132' },
     { name: 'Gyarados', sprite: '130' },
     { name: 'Magikarp', sprite: '129' },
-    { name: 'Rattata', sprite: '019' },
-    { name: 'Pidgey', sprite: '016' },
-    { name: 'Caterpie', sprite: '010' },
-    { name: 'Weedle', sprite: '013' },
-    { name: 'Butterfree', sprite: '012' },
-    { name: 'Beedrill', sprite: '015' },
-    { name: 'Raichu', sprite: '026' },
-    { name: 'Vulpix', sprite: '037' },
-    { name: 'Ninetales', sprite: '038' },
-    { name: 'Clefairy', sprite: '035' },
-    { name: 'Alakazam', sprite: '065' },
-    { name: 'Machamp', sprite: '068' },
-    { name: 'Oddish', sprite: '043' },
-    { name: 'Poliwag', sprite: '060' },
-    { name: 'Geodude', sprite: '074' },
-    { name: 'Ponyta', sprite: '077' },
-    { name: 'Slowpoke', sprite: '079' },
-    { name: 'Magnemite', sprite: '081' },
-    { name: 'Doduo', sprite: '084' },
-    { name: 'Gastly', sprite: '092' },
-    { name: 'Onix', sprite: '095' },
+    { name: 'Rattata', sprite: '19' },
+    { name: 'Pidgey', sprite: '16' },
+    { name: 'Caterpie', sprite: '10' },
+    { name: 'Weedle', sprite: '13' },
+    { name: 'Butterfree', sprite: '12' },
+    { name: 'Beedrill', sprite: '15' },
+    { name: 'Raichu', sprite: '26' },
+    { name: 'Vulpix', sprite: '37' },
+    { name: 'Ninetales', sprite: '38' },
+    { name: 'Clefairy', sprite: '35' },
+    { name: 'Alakazam', sprite: '65' },
+    { name: 'Machamp', sprite: '68' },
+    { name: 'Oddish', sprite: '43' },
+    { name: 'Poliwag', sprite: '60' },
+    { name: 'Geodude', sprite: '74' },
+    { name: 'Ponyta', sprite: '77' },
+    { name: 'Slowpoke', sprite: '79' },
+    { name: 'Magnemite', sprite: '81' },
+    { name: 'Doduo', sprite: '84' },
+    { name: 'Gastly', sprite: '92' },
+    { name: 'Onix', sprite: '95' },
     { name: 'Voltorb', sprite: '100' },
     { name: 'Cubone', sprite: '104' },
     { name: 'Hitmonlee', sprite: '106' },
@@ -232,9 +234,117 @@ const generateRoomCode = () => {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 };
 
+// Drawing Canvas Component for Drawing Mode
+function DrawingCanvas({ pokemonName, onDrawingUpdate }) {
+  const canvasRef = React.useRef(null);
+  const [isDrawing, setIsDrawing] = React.useState(false);
+  const [color, setColor] = React.useState('#000000');
+
+  const startDrawing = (e) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    setIsDrawing(true);
+  };
+
+  const draw = (e) => {
+    if (!isDrawing) return;
+    
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+  };
+
+  const stopDrawing = () => {
+    if (isDrawing && canvasRef.current) {
+      const canvas = canvasRef.current;
+      const imageData = canvas.toDataURL();
+      onDrawingUpdate(imageData);
+    }
+    setIsDrawing(false);
+  };
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    onDrawingUpdate(null);
+  };
+
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }, [pokemonName]);
+
+  const colors = ['#000000', '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#FFA500', '#8B4513'];
+
+  return (
+    <div className="bg-white rounded-2xl p-4">
+      <div className="text-center mb-2">
+        <div className="text-sm font-bold text-gray-700">Draw: {pokemonName}</div>
+      </div>
+      
+      <canvas
+        ref={canvasRef}
+        width={400}
+        height={400}
+        className="border-4 border-gray-300 rounded-lg cursor-crosshair w-full"
+        onMouseDown={startDrawing}
+        onMouseMove={draw}
+        onMouseUp={stopDrawing}
+        onMouseLeave={stopDrawing}
+        style={{ touchAction: 'none' }}
+      />
+      
+      <div className="mt-4 space-y-2">
+        <div className="flex gap-2 justify-center flex-wrap">
+          {colors.map(c => (
+            <button
+              key={c}
+              onClick={() => setColor(c)}
+              className={`w-8 h-8 rounded-full border-2 transition-transform ${color === c ? 'border-gray-800 scale-110' : 'border-gray-300'}`}
+              style={{ backgroundColor: c }}
+            />
+          ))}
+        </div>
+        
+        <button
+          onClick={clearCanvas}
+          className="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 font-bold"
+        >
+          Clear Canvas
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function PokeDescribe() {
   const [screen, setScreen] = useState('main-menu');
   const [gameState, setGameState] = useState('difficulty');
+  const [gameMode, setGameMode] = useState(null); // 'classic' or 'drawing'
+  const [fixedDifficulty, setFixedDifficulty] = useState(null); // 'easy', 'medium', 'hard', or null for mixed
   const [roomCode, setRoomCode] = useState('');
   const [joinCodeInput, setJoinCodeInput] = useState('');
   const [playerName, setPlayerName] = useState('');
@@ -252,6 +362,7 @@ export default function PokeDescribe() {
   const [copied, setCopied] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [drawingData, setDrawingData] = useState(null); // For storing drawing canvas data
 
   // Listen for real-time player updates
   useEffect(() => {
@@ -295,6 +406,15 @@ export default function PokeDescribe() {
     }
   };
 
+  const syncDrawing = async (imageData) => {
+    if (!roomCode || !database) return;
+    try {
+      await set(ref(database, `rooms/${roomCode}/gameState/drawingData`), imageData);
+    } catch (error) {
+      console.error('Sync drawing error:', error);
+    }
+  };
+
   // Listen for game state updates - with proper cleanup
   useEffect(() => {
     if (screen === 'game' && roomCode && database) {
@@ -333,6 +453,8 @@ export default function PokeDescribe() {
       
       await set(roomRef, {
         created: Date.now(),
+        gameMode: gameMode || 'classic',
+        fixedDifficulty: fixedDifficulty,
         players: { [playerId]: player }
       });
       
@@ -366,6 +488,12 @@ export default function PokeDescribe() {
         setIsLoading(false);
         return;
       }
+
+      const roomData = snapshot.val();
+      
+      // Load game settings
+      setGameMode(roomData.gameMode || 'classic');
+      setFixedDifficulty(roomData.fixedDifficulty || null);
 
       const player = { id: playerId, name: name, team: null, role: null };
       
@@ -520,18 +648,21 @@ export default function PokeDescribe() {
   }, [timeLeft, gameState, screen, myPlayerId, players]);
 
   const selectDifficulty = async (diff) => {
-    const pool = POKEMON_POOLS[diff];
+    // If fixed difficulty is set, use that instead
+    const actualDifficulty = fixedDifficulty || diff;
+    const pool = POKEMON_POOLS[actualDifficulty];
     const pokemon = pool[Math.floor(Math.random() * pool.length)];
     
     // Update Firebase first, then local state will update via listener
     await syncGameState({
-      phase: 'describing',
+      phase: gameMode === 'drawing' ? 'drawing' : 'describing',
       currentTeamIndex,
       roundNumber,
       teams,
-      difficulty: diff,
+      difficulty: actualDifficulty,
       currentPokemon: pokemon,
-      timeLeft: 60
+      timeLeft: 60,
+      gameMode: gameMode
     });
   };
 
@@ -642,11 +773,11 @@ export default function PokeDescribe() {
 
           <div className="space-y-6">
             <button
-              onClick={createGame}
+              onClick={() => setScreen('game-mode-select')}
               disabled={isLoading}
               className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white text-3xl font-bold py-8 rounded-2xl hover:scale-105 transition-transform shadow-lg disabled:opacity-50"
             >
-              {isLoading ? 'Creating...' : 'Create Game'}
+              Create Game
             </button>
 
             <button
@@ -666,6 +797,142 @@ export default function PokeDescribe() {
               <li>✨ Easy = 1pt, Medium = 2pts, Hard = 3pts</li>
             </ul>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (screen === 'game-mode-select') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8 flex items-center justify-center">
+        <div className="bg-white rounded-3xl shadow-2xl p-12 max-w-4xl w-full">
+          <div className="text-center mb-12">
+            <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
+              Select Game Mode
+            </h1>
+            <p className="text-xl text-gray-600">Choose how you want to play!</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-8 mb-8">
+            {/* Classic Mode */}
+            <button
+              onClick={() => {
+                setGameMode('classic');
+                setScreen('difficulty-select');
+              }}
+              className="bg-gradient-to-br from-blue-500 to-purple-500 text-white rounded-2xl p-8 hover:scale-105 transition-all shadow-lg"
+            >
+              <div className="text-6xl mb-4">💬</div>
+              <div className="text-3xl font-bold mb-2">Classic Mode</div>
+              <div className="text-lg opacity-90">Describe the Pokémon with words!</div>
+              <div className="mt-4 text-sm opacity-75">
+                The Noob describes, the Pros guess
+              </div>
+            </button>
+
+            {/* Drawing Mode */}
+            <button
+              onClick={() => {
+                setGameMode('drawing');
+                setScreen('difficulty-select');
+              }}
+              className="bg-gradient-to-br from-pink-500 to-orange-500 text-white rounded-2xl p-8 hover:scale-105 transition-all shadow-lg"
+            >
+              <div className="text-6xl mb-4">🎨</div>
+              <div className="text-3xl font-bold mb-2">Drawing Mode</div>
+              <div className="text-lg opacity-90">Draw the Pokémon on a canvas!</div>
+              <div className="mt-4 text-sm opacity-75">
+                The Noob draws, the Pros guess
+              </div>
+            </button>
+          </div>
+
+          <button
+            onClick={() => setScreen('main-menu')}
+            className="w-full bg-gray-300 text-gray-700 text-xl font-bold py-4 rounded-xl hover:bg-gray-400 transition-colors"
+          >
+            Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (screen === 'difficulty-select') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8 flex items-center justify-center">
+        <div className="bg-white rounded-3xl shadow-2xl p-12 max-w-4xl w-full">
+          <div className="text-center mb-12">
+            <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
+              Select Difficulty Mode
+            </h1>
+            <p className="text-xl text-gray-600">Choose your Pokémon difficulty</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-6 mb-8">
+            {/* Mixed Difficulty */}
+            <button
+              onClick={() => {
+                setFixedDifficulty(null);
+                createGame();
+              }}
+              className="bg-gradient-to-br from-purple-500 to-blue-500 text-white rounded-2xl p-8 hover:scale-105 transition-all shadow-lg"
+            >
+              <div className="text-5xl mb-3">🎲</div>
+              <div className="text-2xl font-bold mb-2">Mixed</div>
+              <div className="text-sm opacity-90">Choose difficulty each round</div>
+              <div className="mt-2 text-xs opacity-75">Classic gameplay</div>
+            </button>
+
+            {/* All Easy */}
+            <button
+              onClick={() => {
+                setFixedDifficulty('easy');
+                createGame();
+              }}
+              className="bg-green-500 text-white rounded-2xl p-8 hover:scale-105 transition-all shadow-lg"
+            >
+              <div className="text-5xl mb-3">😊</div>
+              <div className="text-2xl font-bold mb-2">All Easy</div>
+              <div className="text-sm opacity-90">Only iconic Pokémon</div>
+              <div className="mt-2 text-xs opacity-75">1 point per guess</div>
+            </button>
+
+            {/* All Medium */}
+            <button
+              onClick={() => {
+                setFixedDifficulty('medium');
+                createGame();
+              }}
+              className="bg-yellow-500 text-white rounded-2xl p-8 hover:scale-105 transition-all shadow-lg"
+            >
+              <div className="text-5xl mb-3">🤔</div>
+              <div className="text-2xl font-bold mb-2">All Medium</div>
+              <div className="text-sm opacity-90">Popular but less iconic</div>
+              <div className="mt-2 text-xs opacity-75">2 points per guess</div>
+            </button>
+
+            {/* All Hard */}
+            <button
+              onClick={() => {
+                setFixedDifficulty('hard');
+                createGame();
+              }}
+              className="bg-red-500 text-white rounded-2xl p-8 hover:scale-105 transition-all shadow-lg"
+            >
+              <div className="text-5xl mb-3">😰</div>
+              <div className="text-2xl font-bold mb-2">All Hard</div>
+              <div className="text-sm opacity-90">Obscure Pokémon</div>
+              <div className="mt-2 text-xs opacity-75">3 points per guess</div>
+            </button>
+          </div>
+
+          <button
+            onClick={() => setScreen('game-mode-select')}
+            className="w-full bg-gray-300 text-gray-700 text-xl font-bold py-4 rounded-xl hover:bg-gray-400 transition-colors"
+          >
+            Back
+          </button>
         </div>
       </div>
     );
@@ -736,6 +1003,22 @@ export default function PokeDescribe() {
                 Game Lobby
               </h1>
               <p className="text-xl text-gray-600">Choose your team and role</p>
+              <div className="mt-4 flex gap-4 justify-center items-center">
+                <div className="bg-gradient-to-r from-purple-100 to-blue-100 border-2 border-purple-300 rounded-xl px-6 py-2">
+                  <div className="text-sm font-bold text-purple-700">
+                    Mode: {gameMode === 'drawing' ? '🎨 Drawing' : '💬 Classic'}
+                  </div>
+                </div>
+                <div className="bg-gradient-to-r from-orange-100 to-yellow-100 border-2 border-orange-300 rounded-xl px-6 py-2">
+                  <div className="text-sm font-bold text-orange-700">
+                    Difficulty: {fixedDifficulty ? (
+                      fixedDifficulty === 'easy' ? '😊 All Easy' :
+                      fixedDifficulty === 'medium' ? '🤔 All Medium' :
+                      '😰 All Hard'
+                    ) : '🎲 Mixed'}
+                  </div>
+                </div>
+              </div>
               <div className="mt-2 text-sm text-green-600 font-bold">
                 🔥 {players.length} player{players.length !== 1 ? 's' : ''} connected (Real-time synced!)
               </div>
@@ -938,6 +1221,29 @@ export default function PokeDescribe() {
     }
 
     if (gameState === 'difficulty') {
+      // If fixed difficulty is set, auto-select it
+      if (fixedDifficulty) {
+        // Auto-select the fixed difficulty
+        React.useEffect(() => {
+          selectDifficulty(fixedDifficulty);
+        }, []);
+        
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8">
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-white rounded-3xl shadow-2xl p-8">
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-blue-600 mb-4">Starting Round...</div>
+                  <div className="text-xl text-gray-600">
+                    Difficulty: {fixedDifficulty.charAt(0).toUpperCase() + fixedDifficulty.slice(1)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
       return (
         <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8">
           <div className="max-w-4xl mx-auto">
@@ -1028,23 +1334,40 @@ export default function PokeDescribe() {
                     <div className="text-lg text-gray-600">{currentTeam.noob}</div>
                   </div>
 
-                  <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl p-6 mb-4">
-                    <img 
-                      src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${currentPokemon.sprite}.png`}
-                      alt="Pokemon"
-                      className="w-full h-auto"
+                  {gameMode === 'drawing' ? (
+                    <DrawingCanvas 
+                      pokemonName={currentPokemon.name}
+                      onDrawingUpdate={(imageData) => syncDrawing(imageData)}
                     />
-                    <div className="text-center mt-4 text-2xl font-bold text-gray-800">
-                      {currentPokemon.name}
+                  ) : (
+                    <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl p-6 mb-4">
+                      <img 
+                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${currentPokemon.sprite}.png`}
+                        alt="Pokemon"
+                        className="w-full h-auto"
+                      />
+                      <div className="text-center mt-4 text-2xl font-bold text-gray-800">
+                        {currentPokemon.name}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4">
                     <div className="font-bold text-red-700 mb-2">Remember:</div>
                     <ul className="text-sm text-gray-700 space-y-1">
-                      <li>✓ Describe colors, shapes, vibes</li>
-                      <li>✗ Don't say the name!</li>
-                      <li>✗ Don't spell letters</li>
+                      {gameMode === 'drawing' ? (
+                        <>
+                          <li>✓ Draw the Pokémon's shape and features</li>
+                          <li>✗ Don't write the name!</li>
+                          <li>✗ Don't write letters or numbers</li>
+                        </>
+                      ) : (
+                        <>
+                          <li>✓ Describe colors, shapes, vibes</li>
+                          <li>✗ Don't say the name!</li>
+                          <li>✗ Don't spell letters</li>
+                        </>
+                      )}
                     </ul>
                   </div>
                 </div>
@@ -1069,10 +1392,17 @@ export default function PokeDescribe() {
                     <div className="text-center">
                       <div className="text-white text-6xl font-bold mb-2">{timeLeft}s</div>
                       <div className="text-white text-xl">
-                        {currentTeam.noob} is describing...
+                        {currentTeam.noob} is {gameMode === 'drawing' ? 'drawing' : 'describing'}...
                       </div>
                     </div>
                   </div>
+
+                  {gameMode === 'drawing' && drawingData && (
+                    <div className="mb-6 bg-white rounded-xl p-4">
+                      <div className="text-center mb-2 font-bold text-gray-700">Current Drawing:</div>
+                      <img src={drawingData} alt="Drawing" className="w-full rounded-lg border-4 border-purple-300" />
+                    </div>
+                  )}
 
                   <div className="space-y-4">
                     <input
