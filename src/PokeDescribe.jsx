@@ -1,4 +1,4 @@
-/* eslint-disable */
+
 import React, { useState, useEffect } from 'react';
 import { Copy, Check } from 'lucide-react';
 import { database, ref, set, get, onValue, remove } from './firebase';
@@ -181,6 +181,41 @@ export default function PokeDescribe() {
         return;
       }
     }
+    
+   // Game State Sync Functions
+  const syncGameState = async (state) => {
+    if (!database || !roomCode) return;
+    try {
+      await set(ref(database, `rooms/${roomCode}/gameState`), state);
+    } catch (error) {
+      console.error('Sync game state error:', error);
+    }
+  };
+
+  const loadGameState = () => {
+    if (!database || !roomCode) return;
+    const gameStateRef = ref(database, `rooms/${roomCode}/gameState`);
+    onValue(gameStateRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        setGameState(data.phase);
+        setCurrentTeamIndex(data.currentTeamIndex || 0);
+        setCurrentPokemon(data.currentPokemon);
+        setDifficulty(data.difficulty);
+        setTimeLeft(data.timeLeft || 60);
+        setRoundNumber(data.roundNumber || 1);
+        setTeams(data.teams || teams);
+      }
+    });
+  };
+
+  // Listen for game state updates
+  useEffect(() => {
+    if (screen === 'game' && roomCode) {
+      loadGameState();
+    }
+  }, [screen, roomCode] 
+    
     
     try {
       const playerRef = ref(database, `rooms/${roomCode}/players/${myPlayerId}`);
