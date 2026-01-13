@@ -298,9 +298,11 @@ export default function PokeDescribe() {
   // Listen for game state updates - with proper cleanup
   useEffect(() => {
     if (screen === 'game' && roomCode && database) {
+      console.log('Setting up game state listener...');
       const gameStateRef = ref(database, `rooms/${roomCode}/gameState`);
       const unsubscribe = onValue(gameStateRef, (snapshot) => {
         const data = snapshot.val();
+        console.log('Game state update received:', data);
         if (data) {
           setGameState(data.phase);
           setCurrentTeamIndex(data.currentTeamIndex || 0);
@@ -429,6 +431,7 @@ export default function PokeDescribe() {
   };
 
   const startGame = async () => {
+    console.log('Starting game...');
     const teamMap = {};
     players.forEach(p => {
       if (p.team !== null) {
@@ -449,6 +452,8 @@ export default function PokeDescribe() {
       pros: members.pros.length > 0 ? members.pros : ['Pro']
     }));
     
+    console.log('Created teams:', newTeams);
+    
     // Update Firebase first, then local state will update via listener
     await syncGameState({
       phase: 'difficulty',
@@ -457,6 +462,8 @@ export default function PokeDescribe() {
       teams: newTeams,
       timeLeft: 60
     });
+    
+    console.log('Game state synced, moving to game screen');
     
     // Move to game screen
     setScreen('game');
@@ -918,6 +925,18 @@ export default function PokeDescribe() {
   if (screen === 'game') {
     const currentTeam = teams[currentTeamIndex];
 
+    // Safety check - if teams aren't loaded yet, show loading
+    if (!currentTeam || teams.length === 0) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8 flex items-center justify-center">
+          <div className="bg-white rounded-3xl shadow-2xl p-12 text-center">
+            <div className="text-4xl font-bold text-blue-600 mb-4">Loading game...</div>
+            <div className="text-xl text-gray-600">Syncing with other players</div>
+          </div>
+        </div>
+      );
+    }
+
     if (gameState === 'difficulty') {
       return (
         <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8">
@@ -982,6 +1001,17 @@ export default function PokeDescribe() {
     }
 
     if (gameState === 'describing') {
+      // Safety check - ensure currentPokemon exists
+      if (!currentPokemon) {
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8 flex items-center justify-center">
+            <div className="bg-white rounded-3xl shadow-2xl p-12 text-center">
+              <div className="text-4xl font-bold text-blue-600 mb-4">Loading Pokémon...</div>
+            </div>
+          </div>
+        );
+      }
+
       return (
         <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8">
           <div className="max-w-6xl mx-auto">
@@ -1075,6 +1105,17 @@ export default function PokeDescribe() {
     }
 
     if (gameState === 'steal') {
+      // Safety check
+      if (!currentPokemon) {
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8 flex items-center justify-center">
+            <div className="bg-white rounded-3xl shadow-2xl p-12 text-center">
+              <div className="text-4xl font-bold text-blue-600 mb-4">Loading...</div>
+            </div>
+          </div>
+        );
+      }
+
       return (
         <div className="min-h-screen bg-gradient-to-br from-orange-400 via-red-400 to-pink-400 p-8">
           <div className="max-w-4xl mx-auto">
@@ -1136,6 +1177,17 @@ export default function PokeDescribe() {
     }
 
     if (gameState === 'round-end') {
+      // Safety check
+      if (!currentPokemon) {
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8 flex items-center justify-center">
+            <div className="bg-white rounded-3xl shadow-2xl p-12 text-center">
+              <div className="text-4xl font-bold text-blue-600 mb-4">Loading...</div>
+            </div>
+          </div>
+        );
+      }
+
       return (
         <div className="min-h-screen bg-gradient-to-br from-green-400 via-blue-400 to-purple-400 p-8">
           <div className="max-w-4xl mx-auto">
@@ -1225,6 +1277,16 @@ export default function PokeDescribe() {
         </div>
       );
     }
+
+    // Catch-all for unexpected game states
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8 flex items-center justify-center">
+        <div className="bg-white rounded-3xl shadow-2xl p-12 text-center">
+          <div className="text-4xl font-bold text-blue-600 mb-4">Loading...</div>
+          <div className="text-xl text-gray-600">Game state: {gameState}</div>
+        </div>
+      </div>
+    );
   }
 
   return null;
