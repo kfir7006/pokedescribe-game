@@ -1012,38 +1012,45 @@ export default function PokeDescribe() {
         );
       }
 
+      // Check if current player is the Noob (describer)
+      const myPlayer = players.find(p => p.id === myPlayerId);
+      const isNoob = myPlayer?.role === 'noob' && myPlayer?.team === currentTeamIndex;
+
       return (
         <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8">
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-3 gap-6">
-              <div className="col-span-1 bg-white rounded-3xl shadow-2xl p-6">
-                <div className="text-center mb-4">
-                  <div className="text-xl font-bold text-purple-600 mb-2">NOOB VIEW ONLY</div>
-                  <div className="text-lg text-gray-600">{currentTeam.noob}</div>
-                </div>
+              {/* Only show Pokémon to the Noob */}
+              {isNoob && (
+                <div className="col-span-1 bg-white rounded-3xl shadow-2xl p-6">
+                  <div className="text-center mb-4">
+                    <div className="text-xl font-bold text-purple-600 mb-2">NOOB VIEW ONLY</div>
+                    <div className="text-lg text-gray-600">{currentTeam.noob}</div>
+                  </div>
 
-                <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl p-6 mb-4">
-                  <img 
-                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${currentPokemon.sprite}.png`}
-                    alt="Pokemon"
-                    className="w-full h-auto"
-                  />
-                  <div className="text-center mt-4 text-2xl font-bold text-gray-800">
-                    {currentPokemon.name}
+                  <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl p-6 mb-4">
+                    <img 
+                      src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${currentPokemon.sprite}.png`}
+                      alt="Pokemon"
+                      className="w-full h-auto"
+                    />
+                    <div className="text-center mt-4 text-2xl font-bold text-gray-800">
+                      {currentPokemon.name}
+                    </div>
+                  </div>
+
+                  <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4">
+                    <div className="font-bold text-red-700 mb-2">Remember:</div>
+                    <ul className="text-sm text-gray-700 space-y-1">
+                      <li>✓ Describe colors, shapes, vibes</li>
+                      <li>✗ Don't say the name!</li>
+                      <li>✗ Don't spell letters</li>
+                    </ul>
                   </div>
                 </div>
+              )}
 
-                <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4">
-                  <div className="font-bold text-red-700 mb-2">Remember:</div>
-                  <ul className="text-sm text-gray-700 space-y-1">
-                    <li>✓ Describe colors, shapes, vibes</li>
-                    <li>✗ Don't say the name!</li>
-                    <li>✗ Don't spell letters</li>
-                  </ul>
-                </div>
-              </div>
-
-              <div className="col-span-2 space-y-6">
+              <div className={isNoob ? "col-span-2 space-y-6" : "col-span-3 space-y-6"}>
                 <div className="bg-white rounded-3xl shadow-2xl p-8">
                   <div className="flex justify-between items-center mb-6">
                     <div>
