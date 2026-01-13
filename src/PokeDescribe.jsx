@@ -1,4 +1,4 @@
-
+/* eslint-disable */
 import React, { useState, useEffect } from 'react';
 import { Copy, Check } from 'lucide-react';
 import { database, ref, set, get, onValue, remove } from './firebase';
@@ -15,6 +15,57 @@ const POKEMON_POOLS = {
     { name: 'Jigglypuff', sprite: '039' },
     { name: 'Psyduck', sprite: '054' },
     { name: 'Mewtwo', sprite: '150' },
+    { name: 'Charmander', sprite: '004' },
+    { name: 'Mew', sprite: '151' },
+    { name: 'Gengar', sprite: '094' },
+    { name: 'Dragonite', sprite: '149' },
+    { name: 'Togepi', sprite: '175' },
+    { name: 'Moltres', sprite: '146' },
+    { name: 'Articuno', sprite: '144' },
+    { name: 'Zapdos', sprite: '145' },
+    { name: 'Lapras', sprite: '131' },
+    { name: 'Ditto', sprite: '132' },
+    { name: 'Gyarados', sprite: '130' },
+    { name: 'Magikarp', sprite: '129' },
+    { name: 'Rattata', sprite: '019' },
+    { name: 'Pidgey', sprite: '016' },
+    { name: 'Caterpie', sprite: '010' },
+    { name: 'Weedle', sprite: '013' },
+    { name: 'Butterfree', sprite: '012' },
+    { name: 'Beedrill', sprite: '015' },
+    { name: 'Raichu', sprite: '026' },
+    { name: 'Vulpix', sprite: '037' },
+    { name: 'Ninetales', sprite: '038' },
+    { name: 'Clefairy', sprite: '035' },
+    { name: 'Alakazam', sprite: '065' },
+    { name: 'Machamp', sprite: '068' },
+    { name: 'Oddish', sprite: '043' },
+    { name: 'Poliwag', sprite: '060' },
+    { name: 'Geodude', sprite: '074' },
+    { name: 'Ponyta', sprite: '077' },
+    { name: 'Slowpoke', sprite: '079' },
+    { name: 'Magnemite', sprite: '081' },
+    { name: 'Doduo', sprite: '084' },
+    { name: 'Gastly', sprite: '092' },
+    { name: 'Onix', sprite: '095' },
+    { name: 'Voltorb', sprite: '100' },
+    { name: 'Cubone', sprite: '104' },
+    { name: 'Hitmonlee', sprite: '106' },
+    { name: 'Hitmonchan', sprite: '107' },
+    { name: 'Chansey', sprite: '113' },
+    { name: 'Horsea', sprite: '116' },
+    { name: 'Staryu', sprite: '120' },
+    { name: 'Mr. Mime', sprite: '122' },
+    { name: 'Scyther', sprite: '123' },
+    { name: 'Pinsir', sprite: '127' },
+    { name: 'Tauros', sprite: '128' },
+    { name: 'Vaporeon', sprite: '134' },
+    { name: 'Jolteon', sprite: '135' },
+    { name: 'Flareon', sprite: '136' },
+    { name: 'Porygon', sprite: '137' },
+    { name: 'Omanyte', sprite: '138' },
+    { name: 'Kabuto', sprite: '140' },
+    { name: 'Aerodactyl', sprite: '142' },
   ],
   medium: [
     { name: 'Lucario', sprite: '448' },
@@ -25,6 +76,75 @@ const POKEMON_POOLS = {
     { name: 'Ampharos', sprite: '181' },
     { name: 'Absol', sprite: '359' },
     { name: 'Scizor', sprite: '212' },
+    { name: 'Espeon', sprite: '196' },
+    { name: 'Tyranitar', sprite: '248' },
+    { name: 'Salamence', sprite: '373' },
+    { name: 'Metagross', sprite: '376' },
+    { name: 'Latias', sprite: '380' },
+    { name: 'Latios', sprite: '381' },
+    { name: 'Rayquaza', sprite: '384' },
+    { name: 'Deoxys', sprite: '386' },
+    { name: 'Torterra', sprite: '389' },
+    { name: 'Infernape', sprite: '392' },
+    { name: 'Empoleon', sprite: '395' },
+    { name: 'Staraptor', sprite: '398' },
+    { name: 'Luxray', sprite: '405' },
+    { name: 'Roserade', sprite: '407' },
+    { name: 'Rampardos', sprite: '409' },
+    { name: 'Bastiodon', sprite: '411' },
+    { name: 'Floatzel', sprite: '419' },
+    { name: 'Lopunny', sprite: '428' },
+    { name: 'Mismagius', sprite: '429' },
+    { name: 'Honchkrow', sprite: '430' },
+    { name: 'Spiritomb', sprite: '442' },
+    { name: 'Riolu', sprite: '447' },
+    { name: 'Hippowdon', sprite: '450' },
+    { name: 'Toxicroak', sprite: '454' },
+    { name: 'Abomasnow', sprite: '460' },
+    { name: 'Weavile', sprite: '461' },
+    { name: 'Magnezone', sprite: '462' },
+    { name: 'Electivire', sprite: '466' },
+    { name: 'Magmortar', sprite: '467' },
+    { name: 'Togekiss', sprite: '468' },
+    { name: 'Leafeon', sprite: '470' },
+    { name: 'Glaceon', sprite: '471' },
+    { name: 'Gliscor', sprite: '472' },
+    { name: 'Mamoswine', sprite: '473' },
+    { name: 'Porygon-Z', sprite: '474' },
+    { name: 'Gallade', sprite: '475' },
+    { name: 'Dusknoir', sprite: '477' },
+    { name: 'Froslass', sprite: '478' },
+    { name: 'Rotom', sprite: '479' },
+    { name: 'Uxie', sprite: '480' },
+    { name: 'Mesprit', sprite: '481' },
+    { name: 'Azelf', sprite: '482' },
+    { name: 'Dialga', sprite: '483' },
+    { name: 'Palkia', sprite: '484' },
+    { name: 'Heatran', sprite: '485' },
+    { name: 'Regigigas', sprite: '486' },
+    { name: 'Giratina', sprite: '487' },
+    { name: 'Cresselia', sprite: '488' },
+    { name: 'Darkrai', sprite: '491' },
+    { name: 'Shaymin', sprite: '492' },
+    { name: 'Arceus', sprite: '493' },
+    { name: 'Serperior', sprite: '497' },
+    { name: 'Emboar', sprite: '500' },
+    { name: 'Samurott', sprite: '503' },
+    { name: 'Stoutland', sprite: '508' },
+    { name: 'Unfezant', sprite: '521' },
+    { name: 'Zebstrika', sprite: '523' },
+    { name: 'Excadrill', sprite: '530' },
+    { name: 'Conkeldurr', sprite: '534' },
+    { name: 'Krookodile', sprite: '553' },
+    { name: 'Zoroark', sprite: '571' },
+    { name: 'Chandelure', sprite: '609' },
+    { name: 'Haxorus', sprite: '612' },
+    { name: 'Beartic', sprite: '614' },
+    { name: 'Mienshao', sprite: '620' },
+    { name: 'Golurk', sprite: '623' },
+    { name: 'Braviary', sprite: '628' },
+    { name: 'Hydreigon', sprite: '635' },
+    { name: 'Volcarona', sprite: '637' },
   ],
   hard: [
     { name: 'Sigilyph', sprite: '561' },
@@ -35,6 +155,74 @@ const POKEMON_POOLS = {
     { name: 'Carnivine', sprite: '455' },
     { name: 'Lumineon', sprite: '457' },
     { name: 'Klinklang', sprite: '601' },
+    { name: 'Wormadam', sprite: '413' },
+    { name: 'Mothim', sprite: '414' },
+    { name: 'Vespiquen', sprite: '416' },
+    { name: 'Cherrim', sprite: '421' },
+    { name: 'Chatot', sprite: '441' },
+    { name: 'Finneon', sprite: '456' },
+    { name: 'Lickilicky', sprite: '463' },
+    { name: 'Rhyperior', sprite: '464' },
+    { name: 'Tangrowth', sprite: '465' },
+    { name: 'Yanmega', sprite: '469' },
+    { name: 'Probopass', sprite: '476' },
+    { name: 'Phione', sprite: '489' },
+    { name: 'Watchog', sprite: '505' },
+    { name: 'Liepard', sprite: '510' },
+    { name: 'Simisage', sprite: '512' },
+    { name: 'Simisear', sprite: '514' },
+    { name: 'Simipour', sprite: '516' },
+    { name: 'Musharna', sprite: '518' },
+    { name: 'Swoobat', sprite: '528' },
+    { name: 'Audino', sprite: '531' },
+    { name: 'Gurdurr', sprite: '533' },
+    { name: 'Palpitoad', sprite: '536' },
+    { name: 'Seismitoad', sprite: '537' },
+    { name: 'Throh', sprite: '538' },
+    { name: 'Sawk', sprite: '539' },
+    { name: 'Leavanny', sprite: '542' },
+    { name: 'Whirlipede', sprite: '544' },
+    { name: 'Scolipede', sprite: '545' },
+    { name: 'Whimsicott', sprite: '547' },
+    { name: 'Lilligant', sprite: '549' },
+    { name: 'Maractus', sprite: '556' },
+    { name: 'Crustle', sprite: '558' },
+    { name: 'Cofagrigus', sprite: '563' },
+    { name: 'Carracosta', sprite: '565' },
+    { name: 'Archeops', sprite: '567' },
+    { name: 'Garbodor', sprite: '569' },
+    { name: 'Cinccino', sprite: '573' },
+    { name: 'Gothitelle', sprite: '576' },
+    { name: 'Reuniclus', sprite: '579' },
+    { name: 'Swanna', sprite: '581' },
+    { name: 'Vanilluxe', sprite: '584' },
+    { name: 'Sawsbuck', sprite: '586' },
+    { name: 'Emolga', sprite: '587' },
+    { name: 'Escavalier', sprite: '589' },
+    { name: 'Amoonguss', sprite: '591' },
+    { name: 'Jellicent', sprite: '593' },
+    { name: 'Alomomola', sprite: '594' },
+    { name: 'Galvantula', sprite: '596' },
+    { name: 'Ferrothorn', sprite: '598' },
+    { name: 'Klink', sprite: '599' },
+    { name: 'Klang', sprite: '600' },
+    { name: 'Eelektross', sprite: '604' },
+    { name: 'Beheeyem', sprite: '606' },
+    { name: 'Lampent', sprite: '608' },
+    { name: 'Fraxure', sprite: '611' },
+    { name: 'Accelgor', sprite: '617' },
+    { name: 'Druddigon', sprite: '621' },
+    { name: 'Mandibuzz', sprite: '630' },
+    { name: 'Durant', sprite: '632' },
+    { name: 'Zweilous', sprite: '634' },
+    { name: 'Larvesta', sprite: '636' },
+    { name: 'Cobalion', sprite: '638' },
+    { name: 'Terrakion', sprite: '639' },
+    { name: 'Virizion', sprite: '640' },
+    { name: 'Tornadus', sprite: '641' },
+    { name: 'Thundurus', sprite: '642' },
+    { name: 'Landorus', sprite: '645' },
+    { name: 'Kyurem', sprite: '646' },
   ]
 };
 
@@ -77,6 +265,53 @@ export default function PokeDescribe() {
         }
       });
 
+      return () => unsubscribe();
+    }
+  }, [screen, roomCode]);
+
+  // Listen for game start signal
+  useEffect(() => {
+    if (roomCode && database) {
+      const gameStateRef = ref(database, `rooms/${roomCode}/gameState`);
+      const unsubscribe = onValue(gameStateRef, (snapshot) => {
+        const data = snapshot.val();
+        // If we're in lobby and game state exists, transition to game
+        if (data && screen === 'lobby') {
+          setScreen('game');
+        }
+      });
+
+      return () => unsubscribe();
+    }
+  }, [roomCode, screen]);
+
+  // Game State Sync Functions
+  const syncGameState = async (state) => {
+    if (!database || !roomCode) return;
+    try {
+      await set(ref(database, `rooms/${roomCode}/gameState`), state);
+    } catch (error) {
+      console.error('Sync game state error:', error);
+    }
+  };
+
+  // Listen for game state updates - with proper cleanup
+  useEffect(() => {
+    if (screen === 'game' && roomCode && database) {
+      const gameStateRef = ref(database, `rooms/${roomCode}/gameState`);
+      const unsubscribe = onValue(gameStateRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          setGameState(data.phase);
+          setCurrentTeamIndex(data.currentTeamIndex || 0);
+          setCurrentPokemon(data.currentPokemon);
+          setDifficulty(data.difficulty);
+          setTimeLeft(data.timeLeft || 60);
+          setRoundNumber(data.roundNumber || 1);
+          if (data.teams) setTeams(data.teams);
+        }
+      });
+      
       return () => unsubscribe();
     }
   }, [screen, roomCode]);
@@ -182,41 +417,6 @@ export default function PokeDescribe() {
       }
     }
     
-   // Game State Sync Functions
-  const syncGameState = async (state) => {
-    if (!database || !roomCode) return;
-    try {
-      await set(ref(database, `rooms/${roomCode}/gameState`), state);
-    } catch (error) {
-      console.error('Sync game state error:', error);
-    }
-  };
-
-  const loadGameState = () => {
-    if (!database || !roomCode) return;
-    const gameStateRef = ref(database, `rooms/${roomCode}/gameState`);
-    onValue(gameStateRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        setGameState(data.phase);
-        setCurrentTeamIndex(data.currentTeamIndex || 0);
-        setCurrentPokemon(data.currentPokemon);
-        setDifficulty(data.difficulty);
-        setTimeLeft(data.timeLeft || 60);
-        setRoundNumber(data.roundNumber || 1);
-        setTeams(data.teams || teams);
-      }
-    });
-  };
-
-  // Listen for game state updates
-  useEffect(() => {
-    if (screen === 'game' && roomCode) {
-      loadGameState();
-    }
-  }, [screen, roomCode] 
-    
-    
     try {
       const playerRef = ref(database, `rooms/${roomCode}/players/${myPlayerId}`);
       const snapshot = await get(playerRef);
@@ -228,7 +428,7 @@ export default function PokeDescribe() {
     }
   };
 
-  const startGame = () => {
+  const startGame = async () => {
     const teamMap = {};
     players.forEach(p => {
       if (p.team !== null) {
@@ -248,63 +448,134 @@ export default function PokeDescribe() {
       noob: members.noobs[0] || 'Noob',
       pros: members.pros.length > 0 ? members.pros : ['Pro']
     }));
-
-    setTeams(newTeams);
+    
+    // Update Firebase first, then local state will update via listener
+    await syncGameState({
+      phase: 'difficulty',
+      currentTeamIndex: 0,
+      roundNumber: 1,
+      teams: newTeams,
+      timeLeft: 60
+    });
+    
+    // Move to game screen
     setScreen('game');
-setGameState('difficulty');
   };
 
   useEffect(() => {
     if (screen === 'game' && (gameState === 'describing' || gameState === 'steal')) {
-      if (timeLeft > 0) {
-        const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+      // Only the first player (host) runs the timer
+      const isHost = players.length > 0 && players[0]?.id === myPlayerId;
+      
+      if (isHost && timeLeft > 0) {
+        const timer = setTimeout(async () => {
+          const newTime = timeLeft - 1;
+          setTimeLeft(newTime);
+          
+          // Sync every second for the timer
+          await syncGameState({
+            phase: gameState,
+            currentTeamIndex,
+            roundNumber,
+            teams,
+            difficulty,
+            currentPokemon,
+            timeLeft: newTime
+          });
+        }, 1000);
         return () => clearTimeout(timer);
-      } else {
-        if (gameState === 'describing') {
-          setGameState('steal');
-          setTimeLeft(30);
-        } else {
-          setGameState('round-end');
-        }
+      } else if (isHost && timeLeft <= 0) {
+        const handleTimeout = async () => {
+          if (gameState === 'describing') {
+            await syncGameState({
+              phase: 'steal',
+              currentTeamIndex,
+              roundNumber,
+              teams,
+              difficulty,
+              currentPokemon,
+              timeLeft: 30
+            });
+          } else {
+            await syncGameState({
+              phase: 'round-end',
+              currentTeamIndex,
+              roundNumber,
+              teams,
+              difficulty,
+              currentPokemon
+            });
+          }
+        };
+        handleTimeout();
       }
     }
-  }, [timeLeft, gameState, screen]);
+  }, [timeLeft, gameState, screen, myPlayerId, players]);
 
-  const selectDifficulty = (diff) => {
-    setDifficulty(diff);
+  const selectDifficulty = async (diff) => {
     const pool = POKEMON_POOLS[diff];
     const pokemon = pool[Math.floor(Math.random() * pool.length)];
-    setCurrentPokemon(pokemon);
-    setGameState('describing');
-    setTimeLeft(60);
+    
+    // Update Firebase first, then local state will update via listener
+    await syncGameState({
+      phase: 'describing',
+      currentTeamIndex,
+      roundNumber,
+      teams,
+      difficulty: diff,
+      currentPokemon: pokemon,
+      timeLeft: 60
+    });
   };
 
-  const handleGuess = (teamIndex) => {
+  const handleGuess = async (teamIndex) => {
     const guess = guessInput.trim().toLowerCase();
     const correct = currentPokemon.name.toLowerCase();
     
     if (guess === correct) {
       const points = difficulty === 'easy' ? 1 : difficulty === 'medium' ? 2 : 3;
-      setTeams(teams.map((team, i) => 
+      const updatedTeams = teams.map((team, i) => 
         i === teamIndex ? { ...team, score: team.score + points } : team
-      ));
-      setGameState('round-end');
+      );
+      
       setGuessInput('');
+      
+      // Update Firebase, local state will update via listener
+      await syncGameState({
+        phase: 'round-end',
+        currentTeamIndex,
+        roundNumber,
+        teams: updatedTeams,
+        difficulty,
+        currentPokemon
+      });
     } else {
       setGuessInput('');
     }
   };
 
-  const nextRound = () => {
+  const nextRound = async () => {
     if (roundNumber >= totalRounds) {
-      setGameState('game-over');
+      await syncGameState({
+        phase: 'game-over',
+        currentTeamIndex,
+        roundNumber,
+        teams,
+        difficulty,
+        currentPokemon
+      });
     } else {
-      setRoundNumber(roundNumber + 1);
-      setCurrentTeamIndex((currentTeamIndex + 1) % teams.length);
-      setDifficulty(null);
-      setCurrentPokemon(null);
-      setGameState('difficulty');
-      setStealTeamIndex(null);
+      const newRound = roundNumber + 1;
+      const newTeamIndex = (currentTeamIndex + 1) % teams.length;
+      
+      // Update Firebase, local state will update via listener
+      await syncGameState({
+        phase: 'difficulty',
+        currentTeamIndex: newTeamIndex,
+        roundNumber: newRound,
+        teams,
+        timeLeft: 60
+      });
     }
   };
 
@@ -615,7 +886,7 @@ setGameState('difficulty');
               )}
             </div>
 
-           <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center">
               <div className="bg-blue-50 border-2 border-blue-300 rounded-xl px-6 py-4">
                 <div className="text-sm font-bold text-blue-700 mb-1">Room Code</div>
                 <div className="flex items-center gap-3">
@@ -642,14 +913,11 @@ setGameState('difficulty');
         </div>
       </div>
     );
-   
-}
-// GAME SCREENS - Add this section before "return null;"
-  
+  }
+
   if (screen === 'game') {
     const currentTeam = teams[currentTeamIndex];
 
-    // Difficulty Selection
     if (gameState === 'difficulty') {
       return (
         <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8">
@@ -713,13 +981,11 @@ setGameState('difficulty');
       );
     }
 
-    // Describing Phase - NEXT SCREEN
     if (gameState === 'describing') {
       return (
         <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8">
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-3 gap-6">
-              {/* Noob View */}
               <div className="col-span-1 bg-white rounded-3xl shadow-2xl p-6">
                 <div className="text-center mb-4">
                   <div className="text-xl font-bold text-purple-600 mb-2">NOOB VIEW ONLY</div>
@@ -747,7 +1013,6 @@ setGameState('difficulty');
                 </div>
               </div>
 
-              {/* Game View */}
               <div className="col-span-2 space-y-6">
                 <div className="bg-white rounded-3xl shadow-2xl p-8">
                   <div className="flex justify-between items-center mb-6">
@@ -809,7 +1074,6 @@ setGameState('difficulty');
       );
     }
 
-    // Steal Phase
     if (gameState === 'steal') {
       return (
         <div className="min-h-screen bg-gradient-to-br from-orange-400 via-red-400 to-pink-400 p-8">
@@ -871,7 +1135,6 @@ setGameState('difficulty');
       );
     }
 
-    // Round End
     if (gameState === 'round-end') {
       return (
         <div className="min-h-screen bg-gradient-to-br from-green-400 via-blue-400 to-purple-400 p-8">
@@ -916,10 +1179,10 @@ setGameState('difficulty');
       );
     }
 
-    // Game Over
     if (gameState === 'game-over') {
       const sortedTeams = [...teams].sort((a, b) => b.score - a.score);
       const winner = sortedTeams[0];
+
       return (
         <div className="min-h-screen bg-gradient-to-br from-yellow-400 via-orange-400 to-red-400 p-8">
           <div className="max-w-4xl mx-auto">
@@ -961,9 +1224,8 @@ setGameState('difficulty');
           </div>
         </div>
       );
+    }
   }
 
   return null;
-}
-
 }
