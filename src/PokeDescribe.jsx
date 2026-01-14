@@ -1101,8 +1101,12 @@ function DrawingCanvas({ pokemonName, onDrawingUpdate }) {
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
     
-    const x = (e.clientX - rect.left) * scaleX;
-    const y = (e.clientY - rect.top) * scaleY;
+    let x = (e.clientX - rect.left) * scaleX;
+    let y = (e.clientY - rect.top) * scaleY;
+    
+    // Clamp coordinates to canvas bounds
+    x = Math.max(0, Math.min(canvas.width, x));
+    y = Math.max(0, Math.min(canvas.height, y));
     
     ctx.lineTo(x, y);
     ctx.strokeStyle = isEraser ? '#FFFFFF' : color;
@@ -1205,8 +1209,8 @@ function DrawingCanvas({ pokemonName, onDrawingUpdate }) {
         ref={canvasRef}
         width={3000}
         height={3000}
-        className="border-4 border-gray-300 rounded-lg cursor-crosshair bg-white mx-auto"
-        style={{ width: '1200px', height: '1200px', maxWidth: '90vw', touchAction: 'none' }}
+        className="border-4 border-gray-300 rounded-lg cursor-crosshair bg-white mx-auto overflow-hidden"
+        style={{ width: '1200px', height: '1200px', maxWidth: '90vw', touchAction: 'none', overflow: 'hidden' }}
         onMouseDown={startDrawing}
         onMouseMove={draw}
         onMouseUp={stopDrawing}
@@ -1462,6 +1466,7 @@ export default function PokeDescribe() {
           setTimeLeft(data.timeLeft || 60);
           setRoundNumber(data.roundNumber || 1);
           if (data.teams) setTeams(data.teams);
+          if (data.drawingData !== undefined) setDrawingData(data.drawingData);
         }
       });
       
