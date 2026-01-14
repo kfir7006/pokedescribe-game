@@ -1196,7 +1196,7 @@ function DrawingCanvas({ pokemonName, onDrawingUpdate }) {
   ];
 
   return (
-    <div className="bg-white rounded-2xl p-4">
+    <div className="bg-white rounded-2xl p-4 flex flex-col items-center">
       <div className="text-center mb-3">
         <div className="text-sm font-bold text-gray-700">Draw: {pokemonName}</div>
       </div>
@@ -1205,15 +1205,15 @@ function DrawingCanvas({ pokemonName, onDrawingUpdate }) {
         ref={canvasRef}
         width={3000}
         height={3000}
-        className="border-4 border-gray-300 rounded-lg cursor-crosshair bg-white"
-        style={{ width: '800px', height: '800px', maxWidth: '100%', touchAction: 'none' }}
+        className="border-4 border-gray-300 rounded-lg cursor-crosshair bg-white mx-auto"
+        style={{ width: '1200px', height: '1200px', maxWidth: '90vw', touchAction: 'none' }}
         onMouseDown={startDrawing}
         onMouseMove={draw}
         onMouseUp={stopDrawing}
         onMouseLeave={stopDrawing}
       />
       
-      <div className="mt-4 space-y-3">
+      <div className="mt-4 space-y-3 w-full max-w-4xl">
         {/* Brush Sizes */}
         <div>
           <div className="text-xs font-bold text-gray-600 mb-2">Brush Size:</div>
