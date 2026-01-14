@@ -2492,12 +2492,16 @@ export default function PokeDescribe() {
 
                   {gameMode === 'drawing' && (
                     <div className="mb-6 bg-white rounded-xl p-4">
-                      <div className="text-center mb-2 font-bold text-purple-700 text-xl">🎨 Live Drawing:</div>
+                      <div className="text-center mb-2 font-bold text-purple-700 text-xl">
+                        🎨 {isNoob ? 'Your Drawing:' : 'Live Drawing:'}
+                      </div>
                       {drawingData ? (
                         <img src={drawingData} alt="Drawing" className="w-full rounded-lg border-4 border-purple-400 bg-white" />
                       ) : (
                         <div className="w-full h-96 rounded-lg border-4 border-gray-300 bg-white flex items-center justify-center">
-                          <div className="text-gray-400 text-xl">Waiting for drawing to start...</div>
+                          <div className="text-gray-400 text-xl">
+                            {isNoob ? 'Start drawing on the left!' : 'Waiting for drawing to start...'}
+                          </div>
                         </div>
                       )}
                     </div>
