@@ -1203,8 +1203,8 @@ function DrawingCanvas({ pokemonName, onDrawingUpdate }) {
       
       <canvas
         ref={canvasRef}
-        width={600}
-        height={600}
+        width={800}
+        height={800}
         className="border-4 border-gray-300 rounded-lg cursor-crosshair w-full bg-white"
         onMouseDown={startDrawing}
         onMouseMove={draw}
@@ -1281,6 +1281,92 @@ function DrawingCanvas({ pokemonName, onDrawingUpdate }) {
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Animated Pokemon Background Component for Lobby
+function AnimatedPokemonBackground() {
+  const [sprites, setSprites] = React.useState([]);
+
+  React.useEffect(() => {
+    // Generate random Pokemon sprites
+    const generateSprites = () => {
+      const newSprites = [];
+      const spriteCount = 50; // Number of Pokemon sprites
+      
+      for (let i = 0; i < spriteCount; i++) {
+        const randomPokemonId = Math.floor(Math.random() * 1025) + 1;
+        
+        newSprites.push({
+          id: i,
+          pokemonId: randomPokemonId,
+          x: Math.random() * 100, // Random x position (percentage)
+          y: Math.random() * 100, // Random y position (percentage)
+          direction: Math.random() < 0.5 ? 'diagonal-up' : 'diagonal-down', // Arrow direction from image
+          speed: 0.5 + Math.random() * 1, // Random speed
+          size: 40 + Math.random() * 40, // Random size 40-80px
+        });
+      }
+      
+      setSprites(newSprites);
+    };
+
+    generateSprites();
+  }, []);
+
+  React.useEffect(() => {
+    // Animate sprites
+    const interval = setInterval(() => {
+      setSprites(prevSprites => 
+        prevSprites.map(sprite => {
+          let newX = sprite.x;
+          let newY = sprite.y;
+
+          // Move based on direction (like arrows in your image)
+          if (sprite.direction === 'diagonal-up') {
+            // Move up-right ↗
+            newX += sprite.speed * 0.1;
+            newY -= sprite.speed * 0.15;
+          } else {
+            // Move down-right ↘
+            newX += sprite.speed * 0.1;
+            newY += sprite.speed * 0.15;
+          }
+
+          // Reset position when sprite goes off screen
+          if (newX > 110 || newY < -10 || newY > 110) {
+            newX = -10;
+            newY = Math.random() * 100;
+            // Randomize direction again
+            sprite.direction = Math.random() < 0.5 ? 'diagonal-up' : 'diagonal-down';
+          }
+
+          return { ...sprite, x: newX, y: newY };
+        })
+      );
+    }, 50); // Update every 50ms for smooth animation
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
+      {sprites.map(sprite => (
+        <img
+          key={sprite.id}
+          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${sprite.pokemonId}.png`}
+          alt=""
+          className="absolute transition-opacity duration-300"
+          style={{
+            left: `${sprite.x}%`,
+            top: `${sprite.y}%`,
+            width: `${sprite.size}px`,
+            height: `${sprite.size}px`,
+            transform: 'translate(-50%, -50%)',
+          }}
+        />
+      ))}
     </div>
   );
 }
@@ -1946,8 +2032,11 @@ export default function PokeDescribe() {
     const myPlayer = players.find(p => p.id === myPlayerId);
     
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8 relative overflow-hidden">
+        {/* Animated Pokemon Background */}
+        <AnimatedPokemonBackground />
+        
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="bg-white rounded-3xl shadow-2xl p-8">
             <div className="text-center mb-8">
               <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-2">
