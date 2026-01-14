@@ -1205,12 +1205,12 @@ function DrawingCanvas({ pokemonName, onDrawingUpdate }) {
         ref={canvasRef}
         width={3000}
         height={3000}
-        className="border-4 border-gray-300 rounded-lg cursor-crosshair w-full bg-white"
+        className="border-4 border-gray-300 rounded-lg cursor-crosshair bg-white"
+        style={{ width: '800px', height: '800px', maxWidth: '100%', touchAction: 'none' }}
         onMouseDown={startDrawing}
         onMouseMove={draw}
         onMouseUp={stopDrawing}
         onMouseLeave={stopDrawing}
-        style={{ touchAction: 'none' }}
       />
       
       <div className="mt-4 space-y-3">
