@@ -1203,8 +1203,8 @@ function DrawingCanvas({ pokemonName, onDrawingUpdate }) {
       
       <canvas
         ref={canvasRef}
-        width={1000}
-        height={1000}
+        width={3000}
+        height={3000}
         className="border-4 border-gray-300 rounded-lg cursor-crosshair w-full bg-white"
         onMouseDown={startDrawing}
         onMouseMove={draw}
@@ -1781,23 +1781,24 @@ export default function PokeDescribe() {
 
   if (screen === 'main-menu') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8 flex items-center justify-center">
-        <div className="bg-white rounded-3xl shadow-2xl p-12 max-w-2xl w-full">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black p-8 flex items-center justify-center relative overflow-hidden">
+        <AnimatedPokemonBackground />
+        <div className="bg-gradient-to-br from-gray-800/95 to-gray-900/95 backdrop-blur-sm border border-gray-700 rounded-3xl shadow-2xl p-12 max-w-2xl w-full relative z-10">
           <div className="text-center mb-12">
-            <h1 className="text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
+            <h1 className="text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-4">
               PokéDescribe
             </h1>
-            <p className="text-2xl text-gray-600">The party game where Pokémon knowledge is optional!</p>
+            <p className="text-2xl text-gray-300">The party game where Pokémon knowledge is optional!</p>
           </div>
 
           {errorMessage && (
-            <div className="mb-6 bg-red-100 border-2 border-red-400 rounded-xl p-4 text-center">
-              <div className="text-red-700 font-bold text-lg">⚠️ {errorMessage}</div>
+            <div className="mb-6 bg-red-900/50 border-2 border-red-500 rounded-xl p-4 text-center backdrop-blur-sm">
+              <div className="text-red-200 font-bold text-lg">⚠️ {errorMessage}</div>
             </div>
           )}
 
           <div className="mb-8">
-            <label className="block text-lg font-bold text-gray-700 mb-3">Your Display Name</label>
+            <label className="block text-lg font-bold text-gray-200 mb-3">Your Display Name</label>
             <input
               type="text"
               value={playerName}
@@ -1841,13 +1842,14 @@ export default function PokeDescribe() {
 
   if (screen === 'game-mode-select') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8 flex items-center justify-center">
-        <div className="bg-white rounded-3xl shadow-2xl p-12 max-w-4xl w-full">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black p-8 flex items-center justify-center relative overflow-hidden">
+        <AnimatedPokemonBackground />
+        <div className="bg-gradient-to-br from-gray-800/95 to-gray-900/95 backdrop-blur-sm border border-gray-700 rounded-3xl shadow-2xl p-12 max-w-4xl w-full relative z-10">
           <div className="text-center mb-12">
-            <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
+            <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-4">
               Select Game Mode
             </h1>
-            <p className="text-xl text-gray-600">Choose how you want to play!</p>
+            <p className="text-xl text-gray-300">Choose how you want to play!</p>
           </div>
 
           <div className="grid grid-cols-2 gap-8 mb-8">
@@ -1897,13 +1899,14 @@ export default function PokeDescribe() {
 
   if (screen === 'difficulty-select') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8 flex items-center justify-center">
-        <div className="bg-white rounded-3xl shadow-2xl p-12 max-w-4xl w-full">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black p-8 flex items-center justify-center relative overflow-hidden">
+        <AnimatedPokemonBackground />
+        <div className="bg-gradient-to-br from-gray-800/95 to-gray-900/95 backdrop-blur-sm border border-gray-700 rounded-3xl shadow-2xl p-12 max-w-4xl w-full relative z-10">
           <div className="text-center mb-12">
-            <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
+            <h1 className="text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-4">
               Select Difficulty Mode
             </h1>
-            <p className="text-xl text-gray-600">Choose your Pokémon difficulty</p>
+            <p className="text-xl text-gray-300">Choose your Pokémon difficulty</p>
           </div>
 
           <div className="grid grid-cols-2 gap-6 mb-8">
@@ -1977,24 +1980,25 @@ export default function PokeDescribe() {
 
   if (screen === 'join-game') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8 flex items-center justify-center">
-        <div className="bg-white rounded-3xl shadow-2xl p-12 max-w-2xl w-full">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black p-8 flex items-center justify-center relative overflow-hidden">
+        <AnimatedPokemonBackground />
+        <div className="bg-gradient-to-br from-gray-800/95 to-gray-900/95 backdrop-blur-sm border border-gray-700 rounded-3xl shadow-2xl p-12 max-w-2xl w-full relative z-10">
           <div className="text-center mb-8">
-            <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-teal-600 mb-4">
+            <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-teal-400 mb-4">
               Join Game
             </h1>
-            <p className="text-xl text-gray-600">Enter the room code to join</p>
+            <p className="text-xl text-gray-300">Enter the room code to join</p>
           </div>
 
           {errorMessage && (
-            <div className="mb-6 bg-red-100 border-2 border-red-400 rounded-xl p-4 text-center">
-              <div className="text-red-700 font-bold text-lg">⚠️ {errorMessage}</div>
+            <div className="mb-6 bg-red-900/50 border-2 border-red-500 rounded-xl p-4 text-center backdrop-blur-sm">
+              <div className="text-red-200 font-bold text-lg">⚠️ {errorMessage}</div>
             </div>
           )}
 
           <div className="space-y-6">
             <div>
-              <label className="block text-lg font-bold text-gray-700 mb-3">Room Code</label>
+              <label className="block text-lg font-bold text-gray-200 mb-3">Room Code</label>
               <input
                 type="text"
                 value={joinCodeInput}
@@ -2251,10 +2255,11 @@ export default function PokeDescribe() {
     // Safety check - if teams aren't loaded yet, show loading
     if (!currentTeam || teams.length === 0) {
       return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8 flex items-center justify-center">
-          <div className="bg-white rounded-3xl shadow-2xl p-12 text-center">
-            <div className="text-4xl font-bold text-blue-600 mb-4">Loading game...</div>
-            <div className="text-xl text-gray-600">Syncing with other players</div>
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black p-8 flex items-center justify-center relative overflow-hidden">
+          <AnimatedPokemonBackground />
+          <div className="bg-gradient-to-br from-gray-800/95 to-gray-900/95 backdrop-blur-sm border border-gray-700 rounded-3xl shadow-2xl p-12 text-center relative z-10">
+            <div className="text-4xl font-bold text-blue-400 mb-4">Loading game...</div>
+            <div className="text-xl text-gray-300">Syncing with other players</div>
           </div>
         </div>
       );
@@ -2273,7 +2278,8 @@ export default function PokeDescribe() {
         }, []);
         
         return (
-          <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8">
+          <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black p-8 relative overflow-hidden">
+        <AnimatedPokemonBackground />
             <div className="max-w-4xl mx-auto">
               <div className="bg-white rounded-3xl shadow-2xl p-8">
                 <div className="text-center">
@@ -2289,7 +2295,8 @@ export default function PokeDescribe() {
       }
 
       return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8">
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black p-8 relative overflow-hidden">
+        <AnimatedPokemonBackground />
           <div className="max-w-4xl mx-auto">
             <div className="bg-white rounded-3xl shadow-2xl p-8">
               <div className="flex justify-between items-center mb-6">
@@ -2393,7 +2400,8 @@ export default function PokeDescribe() {
       const myTeam = myPlayer?.team !== null ? teams[myPlayer.team] : null;
 
       return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8">
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black p-8 relative overflow-hidden">
+        <AnimatedPokemonBackground />
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-3 gap-6">
               {/* Only show Pokémon to the Noob */}
