@@ -2412,36 +2412,18 @@ export default function PokeDescribe() {
                     <div className="text-lg text-gray-600">{currentTeam.noob}</div>
                   </div>
 
-                  {gameMode === 'drawing' ? (
-                    <div className="space-y-4">
-                      <DrawingCanvas 
-                        pokemonName={currentPokemon.name}
-                        onDrawingUpdate={(imageData) => syncDrawing(imageData)}
-                      />
-                      <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl p-4">
-                        <div className="text-sm font-bold text-purple-700 mb-2 text-center">Reference:</div>
-                        <img 
-                          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${currentPokemon.sprite}.png`}
-                          alt="Pokemon"
-                          className="w-full h-auto"
-                        />
-                        <div className="text-center mt-2 text-xl font-bold text-gray-800">
-                          {currentPokemon.name}
-                        </div>
-                      </div>
+                  {/* Show Pokemon reference */}
+                  <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl p-4 mb-4">
+                    <div className="text-sm font-bold text-purple-700 mb-2 text-center">Reference:</div>
+                    <img 
+                      src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${currentPokemon.sprite}.png`}
+                      alt="Pokemon"
+                      className="w-full h-auto"
+                    />
+                    <div className="text-center mt-2 text-xl font-bold text-gray-800">
+                      {currentPokemon.name}
                     </div>
-                  ) : (
-                    <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl p-6 mb-4">
-                      <img 
-                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${currentPokemon.sprite}.png`}
-                        alt="Pokemon"
-                        className="w-full h-auto"
-                      />
-                      <div className="text-center mt-4 text-2xl font-bold text-gray-800">
-                        {currentPokemon.name}
-                      </div>
-                    </div>
-                  )}
+                  </div>
 
                   <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4">
                     <div className="font-bold text-red-700 mb-2">Remember:</div>
@@ -2491,17 +2473,22 @@ export default function PokeDescribe() {
                   </div>
 
                   {gameMode === 'drawing' && (
-                    <div className="mb-6 bg-white rounded-xl p-4">
-                      <div className="text-center mb-2 font-bold text-purple-700 text-xl">
-                        🎨 {isNoob ? 'Your Drawing:' : 'Live Drawing:'}
-                      </div>
-                      {drawingData ? (
-                        <img src={drawingData} alt="Drawing" className="w-full rounded-lg border-4 border-purple-400 bg-white" />
+                    <div className="mb-6">
+                      {isNoob ? (
+                        <DrawingCanvas 
+                          pokemonName={currentPokemon.name}
+                          onDrawingUpdate={(imageData) => syncDrawing(imageData)}
+                        />
                       ) : (
-                        <div className="w-full h-96 rounded-lg border-4 border-gray-300 bg-white flex items-center justify-center">
-                          <div className="text-gray-400 text-xl">
-                            {isNoob ? 'Start drawing on the left!' : 'Waiting for drawing to start...'}
-                          </div>
+                        <div className="bg-white rounded-xl p-4">
+                          <div className="text-center mb-2 font-bold text-purple-700 text-xl">🎨 Live Drawing:</div>
+                          {drawingData ? (
+                            <img src={drawingData} alt="Drawing" className="w-full rounded-lg border-4 border-purple-400 bg-white" />
+                          ) : (
+                            <div className="w-full h-96 rounded-lg border-4 border-gray-300 bg-white flex items-center justify-center">
+                              <div className="text-gray-400 text-xl">Waiting for drawing to start...</div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
