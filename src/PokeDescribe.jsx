@@ -1063,8 +1063,13 @@ function DrawingCanvas({ pokemonName, onDrawingUpdate }) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    
+    // Account for canvas scaling
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
     
     ctx.beginPath();
     ctx.moveTo(x, y);
@@ -1078,8 +1083,13 @@ function DrawingCanvas({ pokemonName, onDrawingUpdate }) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    
+    // Account for canvas scaling
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
     
     ctx.lineTo(x, y);
     ctx.strokeStyle = color;
@@ -2043,6 +2053,10 @@ export default function PokeDescribe() {
     }
 
     if (gameState === 'difficulty') {
+      // Check if current player is the Noob whose turn it is
+      const myPlayer = players.find(p => p.id === myPlayerId);
+      const isCurrentNoob = myPlayer?.role === 'noob' && myPlayer?.team === currentTeamIndex;
+      
       // If fixed difficulty is set, auto-select it
       if (fixedDifficulty) {
         // Auto-select the fixed difficulty
@@ -2089,12 +2103,22 @@ export default function PokeDescribe() {
                 <p className="text-gray-600 text-lg">
                   <span className="font-bold">{currentTeam.noob}</span> (Noob), choose your difficulty!
                 </p>
+                {!isCurrentNoob && (
+                  <p className="text-red-600 font-bold mt-2">
+                    ⏳ Waiting for {currentTeam.noob} to choose...
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-3 gap-6">
                 <button
-                  onClick={() => selectDifficulty('easy')}
-                  className="bg-green-500 hover:bg-green-600 text-white rounded-2xl p-8 transition-all hover:scale-105 shadow-lg"
+                  onClick={() => isCurrentNoob && selectDifficulty('easy')}
+                  disabled={!isCurrentNoob}
+                  className={`rounded-2xl p-8 transition-all shadow-lg ${
+                    isCurrentNoob 
+                      ? 'bg-green-500 hover:bg-green-600 text-white hover:scale-105 cursor-pointer' 
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50'
+                  }`}
                 >
                   <div className="text-4xl mb-2">😊</div>
                   <div className="text-2xl font-bold mb-2">Easy</div>
@@ -2103,8 +2127,13 @@ export default function PokeDescribe() {
                 </button>
 
                 <button
-                  onClick={() => selectDifficulty('medium')}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white rounded-2xl p-8 transition-all hover:scale-105 shadow-lg"
+                  onClick={() => isCurrentNoob && selectDifficulty('medium')}
+                  disabled={!isCurrentNoob}
+                  className={`rounded-2xl p-8 transition-all shadow-lg ${
+                    isCurrentNoob 
+                      ? 'bg-yellow-500 hover:bg-yellow-600 text-white hover:scale-105 cursor-pointer' 
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50'
+                  }`}
                 >
                   <div className="text-4xl mb-2">🤔</div>
                   <div className="text-2xl font-bold mb-2">Medium</div>
@@ -2113,8 +2142,13 @@ export default function PokeDescribe() {
                 </button>
 
                 <button
-                  onClick={() => selectDifficulty('hard')}
-                  className="bg-red-500 hover:bg-red-600 text-white rounded-2xl p-8 transition-all hover:scale-105 shadow-lg"
+                  onClick={() => isCurrentNoob && selectDifficulty('hard')}
+                  disabled={!isCurrentNoob}
+                  className={`rounded-2xl p-8 transition-all shadow-lg ${
+                    isCurrentNoob 
+                      ? 'bg-red-500 hover:bg-red-600 text-white hover:scale-105 cursor-pointer' 
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50'
+                  }`}
                 >
                   <div className="text-4xl mb-2">😰</div>
                   <div className="text-2xl font-bold mb-2">Hard</div>
