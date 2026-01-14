@@ -1074,12 +1074,16 @@ function DrawingCanvas({ pokemonName, onDrawingUpdate }) {
     const ctx = canvas.getContext('2d');
     const rect = canvas.getBoundingClientRect();
     
+    // Clamp mouse position to canvas display area FIRST
+    const clientX = Math.max(rect.left, Math.min(rect.right, e.clientX));
+    const clientY = Math.max(rect.top, Math.min(rect.bottom, e.clientY));
+    
     // Account for canvas scaling
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
     
-    const x = (e.clientX - rect.left) * scaleX;
-    const y = (e.clientY - rect.top) * scaleY;
+    const x = (clientX - rect.left) * scaleX;
+    const y = (clientY - rect.top) * scaleY;
     
     // Save state before starting new stroke
     saveToHistory();
@@ -1097,16 +1101,16 @@ function DrawingCanvas({ pokemonName, onDrawingUpdate }) {
     const ctx = canvas.getContext('2d');
     const rect = canvas.getBoundingClientRect();
     
+    // Clamp mouse position to canvas display area FIRST
+    const clientX = Math.max(rect.left, Math.min(rect.right, e.clientX));
+    const clientY = Math.max(rect.top, Math.min(rect.bottom, e.clientY));
+    
     // Account for canvas scaling
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
     
-    let x = (e.clientX - rect.left) * scaleX;
-    let y = (e.clientY - rect.top) * scaleY;
-    
-    // Clamp coordinates to canvas bounds
-    x = Math.max(0, Math.min(canvas.width, x));
-    y = Math.max(0, Math.min(canvas.height, y));
+    const x = (clientX - rect.left) * scaleX;
+    const y = (clientY - rect.top) * scaleY;
     
     ctx.lineTo(x, y);
     ctx.strokeStyle = isEraser ? '#FFFFFF' : color;
