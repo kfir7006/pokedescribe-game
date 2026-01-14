@@ -1052,11 +1052,21 @@ const generateRoomCode = () => {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 };
 
-// Drawing Canvas Component for Drawing Mode
+// Drawing Canvas Component for Drawing Mode - Upgraded!
 function DrawingCanvas({ pokemonName, onDrawingUpdate }) {
   const canvasRef = React.useRef(null);
   const [isDrawing, setIsDrawing] = React.useState(false);
   const [color, setColor] = React.useState('#000000');
+  const [brushSize, setBrushSize] = React.useState(3);
+  const [history, setHistory] = React.useState([]);
+  const [isEraser, setIsEraser] = React.useState(false);
+
+  const saveToHistory = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const imageData = canvas.toDataURL();
+    setHistory(prev => [...prev, imageData]);
+  };
 
   const startDrawing = (e) => {
     const canvas = canvasRef.current;
@@ -1070,6 +1080,9 @@ function DrawingCanvas({ pokemonName, onDrawingUpdate }) {
     
     const x = (e.clientX - rect.left) * scaleX;
     const y = (e.clientY - rect.top) * scaleY;
+    
+    // Save state before starting new stroke
+    saveToHistory();
     
     ctx.beginPath();
     ctx.moveTo(x, y);
@@ -1092,9 +1105,10 @@ function DrawingCanvas({ pokemonName, onDrawingUpdate }) {
     const y = (e.clientY - rect.top) * scaleY;
     
     ctx.lineTo(x, y);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = isEraser ? '#FFFFFF' : color;
+    ctx.lineWidth = brushSize;
     ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     ctx.stroke();
   };
 
@@ -1107,9 +1121,32 @@ function DrawingCanvas({ pokemonName, onDrawingUpdate }) {
     setIsDrawing(false);
   };
 
+  const undo = () => {
+    if (history.length === 0) return;
+    
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const previousState = history[history.length - 1];
+    
+    const img = new Image();
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+      onDrawingUpdate(canvas.toDataURL());
+    };
+    img.src = previousState;
+    
+    setHistory(prev => prev.slice(0, -1));
+  };
+
   const clearCanvas = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    saveToHistory();
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = 'white';
@@ -1123,21 +1160,52 @@ function DrawingCanvas({ pokemonName, onDrawingUpdate }) {
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    setHistory([]);
   }, [pokemonName]);
 
-  const colors = ['#000000', '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#FFA500', '#8B4513'];
+  // More colors like Gartic Phone / Scribble.io
+  const colors = [
+    '#000000', // Black
+    '#FFFFFF', // White  
+    '#808080', // Gray
+    '#C0C0C0', // Silver
+    '#FF0000', // Red
+    '#800000', // Maroon
+    '#FFFF00', // Yellow
+    '#FFA500', // Orange
+    '#FFC0CB', // Pink
+    '#FF1493', // Deep Pink
+    '#800080', // Purple
+    '#8B00FF', // Violet
+    '#0000FF', // Blue
+    '#00BFFF', // Sky Blue
+    '#00FFFF', // Cyan
+    '#008080', // Teal
+    '#00FF00', // Lime
+    '#008000', // Green
+    '#90EE90', // Light Green
+    '#A52A2A', // Brown
+  ];
+
+  const sizes = [
+    { size: 2, label: 'XS' },
+    { size: 5, label: 'S' },
+    { size: 10, label: 'M' },
+    { size: 20, label: 'L' },
+    { size: 35, label: 'XL' },
+  ];
 
   return (
     <div className="bg-white rounded-2xl p-4">
-      <div className="text-center mb-2">
+      <div className="text-center mb-3">
         <div className="text-sm font-bold text-gray-700">Draw: {pokemonName}</div>
       </div>
       
       <canvas
         ref={canvasRef}
-        width={400}
-        height={400}
-        className="border-4 border-gray-300 rounded-lg cursor-crosshair w-full"
+        width={600}
+        height={600}
+        className="border-4 border-gray-300 rounded-lg cursor-crosshair w-full bg-white"
         onMouseDown={startDrawing}
         onMouseMove={draw}
         onMouseUp={stopDrawing}
@@ -1145,24 +1213,73 @@ function DrawingCanvas({ pokemonName, onDrawingUpdate }) {
         style={{ touchAction: 'none' }}
       />
       
-      <div className="mt-4 space-y-2">
-        <div className="flex gap-2 justify-center flex-wrap">
-          {colors.map(c => (
-            <button
-              key={c}
-              onClick={() => setColor(c)}
-              className={`w-8 h-8 rounded-full border-2 transition-transform ${color === c ? 'border-gray-800 scale-110' : 'border-gray-300'}`}
-              style={{ backgroundColor: c }}
-            />
-          ))}
+      <div className="mt-4 space-y-3">
+        {/* Brush Sizes */}
+        <div>
+          <div className="text-xs font-bold text-gray-600 mb-2">Brush Size:</div>
+          <div className="flex gap-2 justify-center">
+            {sizes.map(s => (
+              <button
+                key={s.size}
+                onClick={() => { setBrushSize(s.size); setIsEraser(false); }}
+                className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                  brushSize === s.size && !isEraser
+                    ? 'bg-blue-500 text-white scale-110' 
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
         </div>
-        
-        <button
-          onClick={clearCanvas}
-          className="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 font-bold"
-        >
-          Clear Canvas
-        </button>
+
+        {/* Colors */}
+        <div>
+          <div className="text-xs font-bold text-gray-600 mb-2">Colors:</div>
+          <div className="flex gap-2 justify-center flex-wrap">
+            {colors.map(c => (
+              <button
+                key={c}
+                onClick={() => { setColor(c); setIsEraser(false); }}
+                className={`w-8 h-8 rounded-lg border-2 transition-transform ${
+                  color === c && !isEraser ? 'border-gray-800 scale-125 ring-2 ring-blue-400' : 'border-gray-400'
+                }`}
+                style={{ backgroundColor: c }}
+                title={c}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Tools */}
+        <div className="grid grid-cols-3 gap-2">
+          <button
+            onClick={() => setIsEraser(!isEraser)}
+            className={`py-3 rounded-lg font-bold transition-all ${
+              isEraser
+                ? 'bg-purple-500 text-white' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            {isEraser ? '🧹 Erasing' : '🧹 Eraser'}
+          </button>
+          
+          <button
+            onClick={undo}
+            disabled={history.length === 0}
+            className="bg-yellow-500 text-white py-3 rounded-lg hover:bg-yellow-600 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            ↶ Undo
+          </button>
+          
+          <button
+            onClick={clearCanvas}
+            className="bg-red-500 text-white py-3 rounded-lg hover:bg-red-600 font-bold"
+          >
+            🗑️ Clear
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -1433,48 +1550,50 @@ export default function PokeDescribe() {
       if (isHost && timeLeft > 0) {
         const timer = setTimeout(async () => {
           const newTime = timeLeft - 1;
-          setTimeLeft(newTime);
           
-          // Sync every second for the timer
-          await syncGameState({
-            phase: gameState,
-            currentTeamIndex,
-            roundNumber,
-            teams,
-            difficulty,
-            currentPokemon,
-            timeLeft: newTime,
-            gameMode: gameMode,
-            drawingData: drawingData
-          });
-        }, 1000);
-        return () => clearTimeout(timer);
-      } else if (isHost && timeLeft <= 0) {
-        const handleTimeout = async () => {
-          if (gameState === 'describing' || gameState === 'drawing') {
-            await syncGameState({
-              phase: 'steal',
-              currentTeamIndex,
-              roundNumber,
-              teams,
-              difficulty,
-              currentPokemon,
-              timeLeft: 30,
-              gameMode: gameMode
-            });
+          // If time just hit 0, transition phases immediately
+          if (newTime <= 0) {
+            if (gameState === 'describing' || gameState === 'drawing') {
+              // Transition to steal phase
+              await syncGameState({
+                phase: 'steal',
+                currentTeamIndex,
+                roundNumber,
+                teams,
+                difficulty,
+                currentPokemon,
+                timeLeft: 30,
+                gameMode: gameMode
+              });
+            } else if (gameState === 'steal') {
+              // Transition to round-end
+              await syncGameState({
+                phase: 'round-end',
+                currentTeamIndex,
+                roundNumber,
+                teams,
+                difficulty,
+                currentPokemon,
+                gameMode: gameMode
+              });
+            }
           } else {
+            // Normal countdown - just update time
+            setTimeLeft(newTime);
             await syncGameState({
-              phase: 'round-end',
+              phase: gameState,
               currentTeamIndex,
               roundNumber,
               teams,
               difficulty,
               currentPokemon,
-              gameMode: gameMode
+              timeLeft: newTime,
+              gameMode: gameMode,
+              drawingData: drawingData
             });
           }
-        };
-        handleTimeout();
+        }, 1000);
+        return () => clearTimeout(timer);
       }
     }
   }, [timeLeft, gameState, screen, myPlayerId, players, drawingData]);
