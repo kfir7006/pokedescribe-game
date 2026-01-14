@@ -2174,9 +2174,15 @@ export default function PokeDescribe() {
         );
       }
 
-      // Check if current player is the Noob (describer)
+      // Check if current player is the Noob (describer/drawer)
       const myPlayer = players.find(p => p.id === myPlayerId);
       const isNoob = myPlayer?.role === 'noob' && myPlayer?.team === currentTeamIndex;
+      
+      // Check if player can guess (must be Pro on the CURRENT team)
+      const canGuess = myPlayer?.role === 'pro' && myPlayer?.team === currentTeamIndex;
+      
+      // Get the player's own team info for display
+      const myTeam = myPlayer?.team !== null ? teams[myPlayer.team] : null;
 
       return (
         <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 p-8">
@@ -2246,14 +2252,16 @@ export default function PokeDescribe() {
                 <div className="bg-white rounded-3xl shadow-2xl p-8">
                   <div className="flex justify-between items-center mb-6">
                     <div>
-                      <div className="text-3xl font-bold" style={{ color: currentTeam.color }}>
-                        {currentTeam.name}
+                      <div className="text-3xl font-bold" style={{ color: myTeam?.color || currentTeam.color }}>
+                        {myTeam?.name || 'Spectator'}
                       </div>
-                      <div className="text-gray-600">Pros: {currentTeam.pros.join(', ')}</div>
+                      <div className="text-gray-600">
+                        {myPlayer?.role === 'pro' ? `Pros: ${myTeam?.pros.join(', ')}` : `You are the Noob`}
+                      </div>
                     </div>
                     <div className="text-right">
                       <div className="text-sm text-gray-500">Round {roundNumber}/{totalRounds}</div>
-                      <div className="text-4xl font-bold">{currentTeam.score} pts</div>
+                      <div className="text-4xl font-bold">{myTeam?.score || 0} pts</div>
                     </div>
                   </div>
 
@@ -2279,23 +2287,43 @@ export default function PokeDescribe() {
                     </div>
                   )}
 
-                  <div className="space-y-4">
-                    <input
-                      type="text"
-                      value={guessInput}
-                      onChange={(e) => setGuessInput(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleGuess(currentTeamIndex)}
-                      placeholder="Type your guess..."
-                      className="w-full px-6 py-4 text-xl border-2 border-gray-300 rounded-xl focus:outline-none focus:border-purple-500"
-                      autoFocus
-                    />
-                    <button
-                      onClick={() => handleGuess(currentTeamIndex)}
-                      className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white text-xl font-bold py-4 rounded-xl hover:scale-105 transition-transform shadow-lg"
-                    >
-                      Submit Guess
-                    </button>
-                  </div>
+                  {canGuess ? (
+                    <div className="space-y-4">
+                      <input
+                        type="text"
+                        value={guessInput}
+                        onChange={(e) => setGuessInput(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleGuess(currentTeamIndex)}
+                        placeholder="Type your guess..."
+                        className="w-full px-6 py-4 text-xl border-2 border-gray-300 rounded-xl focus:outline-none focus:border-purple-500"
+                        autoFocus
+                      />
+                      <button
+                        onClick={() => handleGuess(currentTeamIndex)}
+                        className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white text-xl font-bold py-4 rounded-xl hover:scale-105 transition-transform shadow-lg"
+                      >
+                        Submit Guess
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-100 border-2 border-gray-300 rounded-xl p-6 text-center">
+                      <div className="text-gray-600 text-lg">
+                        {isNoob ? (
+                          <>
+                            <div className="text-2xl mb-2">🎨</div>
+                            <div>You are {gameMode === 'drawing' ? 'drawing' : 'describing'}!</div>
+                            <div className="text-sm mt-2">Wait for your team's Pros to guess</div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="text-2xl mb-2">⏳</div>
+                            <div>You cannot guess this round</div>
+                            <div className="text-sm mt-2">Only {currentTeam.name}'s Pros can guess</div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-xl p-6">
@@ -2328,6 +2356,11 @@ export default function PokeDescribe() {
         );
       }
 
+      const myPlayer = players.find(p => p.id === myPlayerId);
+      // Can steal if: Pro AND not on the current team
+      const canSteal = myPlayer?.role === 'pro' && myPlayer?.team !== currentTeamIndex;
+      const myTeam = myPlayer?.team !== null ? teams[myPlayer.team] : null;
+
       return (
         <div className="min-h-screen bg-gradient-to-br from-orange-400 via-red-400 to-pink-400 p-8">
           <div className="max-w-4xl mx-auto">
@@ -2335,7 +2368,9 @@ export default function PokeDescribe() {
               <div className="text-center mb-6">
                 <div className="text-5xl mb-4">⚡</div>
                 <div className="text-4xl font-bold text-red-600 mb-2">STEAL PHASE!</div>
-                <div className="text-2xl text-gray-600">Other teams can steal the points!</div>
+                <div className="text-2xl text-gray-600">
+                  {canSteal ? 'Steal the points for your team!' : 'Other teams can steal the points!'}
+                </div>
               </div>
 
               <div className="bg-gradient-to-r from-red-500 to-orange-500 rounded-2xl p-6 mb-6">
@@ -2344,43 +2379,78 @@ export default function PokeDescribe() {
                 </div>
               </div>
 
-              <div className="mb-6">
-                <div className="text-lg font-bold text-gray-800 mb-3">Select your team:</div>
-                <div className="grid grid-cols-4 gap-3 mb-4">
-                  {teams.filter((_, i) => i !== currentTeamIndex).map((team) => (
+              {canSteal ? (
+                <>
+                  <div className="mb-6">
+                    <div className="text-lg font-bold text-gray-800 mb-3">Select your team:</div>
+                    <div className="grid grid-cols-4 gap-3 mb-4">
+                      {teams.filter((_, i) => i !== currentTeamIndex).map((team) => (
+                        <button
+                          key={team.id}
+                          onClick={() => setStealTeamIndex(team.id)}
+                          className={`p-4 rounded-xl font-bold transition-all ${
+                            stealTeamIndex === team.id
+                              ? 'ring-4 ring-purple-500 scale-105'
+                              : 'hover:scale-105'
+                          }`}
+                          style={{ backgroundColor: team.color, color: 'white' }}
+                        >
+                          {team.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <input
+                      type="text"
+                      value={guessInput}
+                      onChange={(e) => setGuessInput(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && stealTeamIndex !== null && handleGuess(stealTeamIndex)}
+                      placeholder="Type your guess..."
+                      className="w-full px-6 py-4 text-xl border-2 border-gray-300 rounded-xl focus:outline-none focus:border-red-500"
+                      disabled={stealTeamIndex === null}
+                    />
                     <button
-                      key={team.id}
-                      onClick={() => setStealTeamIndex(team.id)}
-                      className={`p-4 rounded-xl font-bold transition-all ${
-                        stealTeamIndex === team.id
-                          ? 'ring-4 ring-purple-500 scale-105'
-                          : 'hover:scale-105'
-                      }`}
-                      style={{ backgroundColor: team.color, color: 'white' }}
+                      onClick={() => stealTeamIndex !== null && handleGuess(stealTeamIndex)}
+                      disabled={stealTeamIndex === null}
+                      className="w-full bg-gradient-to-r from-red-500 to-orange-500 text-white text-xl font-bold py-4 rounded-xl hover:scale-105 transition-transform shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {team.name}
+                      Steal Points!
                     </button>
+                  </div>
+                </>
+              ) : (
+                <div className="bg-gray-100 border-2 border-gray-300 rounded-xl p-8 text-center">
+                  <div className="text-gray-600 text-lg">
+                    {myPlayer?.role === 'noob' ? (
+                      <>
+                        <div className="text-3xl mb-3">🎨</div>
+                        <div className="font-bold mb-2">Noobs Cannot Steal</div>
+                        <div className="text-sm">Wait for the next round</div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-3xl mb-3">⏳</div>
+                        <div className="font-bold mb-2">You Cannot Steal This Round</div>
+                        <div className="text-sm">Only Pros from other teams can steal</div>
+                        <div className="text-sm mt-1">(You're on {currentTeam.name})</div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-6">
+                <div className="font-bold text-gray-800 mb-3">Scoreboard</div>
+                <div className="grid grid-cols-4 gap-4">
+                  {teams.map(team => (
+                    <div key={team.id} className="text-center p-3 rounded-xl" style={{ backgroundColor: `${team.color}20` }}>
+                      <div className="font-bold" style={{ color: team.color }}>{team.name}</div>
+                      <div className="text-2xl font-bold">{team.score}</div>
+                    </div>
                   ))}
                 </div>
-              </div>
-
-              <div className="space-y-4">
-                <input
-                  type="text"
-                  value={guessInput}
-                  onChange={(e) => setGuessInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && stealTeamIndex !== null && handleGuess(stealTeamIndex)}
-                  placeholder="Type your guess..."
-                  className="w-full px-6 py-4 text-xl border-2 border-gray-300 rounded-xl focus:outline-none focus:border-red-500"
-                  disabled={stealTeamIndex === null}
-                />
-                <button
-                  onClick={() => stealTeamIndex !== null && handleGuess(stealTeamIndex)}
-                  disabled={stealTeamIndex === null}
-                  className="w-full bg-gradient-to-r from-red-500 to-orange-500 text-white text-xl font-bold py-4 rounded-xl hover:scale-105 transition-transform shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Steal the Points!
-                </button>
               </div>
             </div>
           </div>
